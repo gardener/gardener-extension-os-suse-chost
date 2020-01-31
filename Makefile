@@ -28,7 +28,7 @@ IGNORE_OPERATION_ANNOTATION := true
 
 .PHONY: format
 format:
-	@$(REPO_ROOT)/vendor/github.com/gardener/gardener-extensions/hack/format.sh .
+	@$(REPO_ROOT)/vendor/github.com/gardener/gardener-extensions/hack/format.sh ./cmd ./pkg
 
 .PHONY: clean
 clean:
@@ -44,7 +44,7 @@ check:
 
 .PHONY: test
 test:
-	@$(REPO_ROOT)/vendor/github.com/gardener/gardener-extensions/hack/test.sh ./...
+	@$(REPO_ROOT)/vendor/github.com/gardener/gardener-extensions/hack/test.sh -r ./...
 
 .PHONY: verify
 verify: check generate test format
@@ -56,7 +56,6 @@ install:
 
 .PHONY: install-requirements
 install-requirements:
-	@go install -mod=vendor $(REPO_ROOT)/vendor/github.com/ahmetb/gen-crd-api-reference-docs
 	@go install -mod=vendor $(REPO_ROOT)/vendor/github.com/gobuffalo/packr/v2/packr2
 	@go install -mod=vendor $(REPO_ROOT)/vendor/github.com/golang/mock/mockgen
 	@go install -mod=vendor $(REPO_ROOT)/vendor/github.com/onsi/ginkgo/ginkgo
@@ -86,7 +85,7 @@ revendor:
 	@GO111MODULE=on go mod vendor
 	@GO111MODULE=on go mod tidy
 	@chmod +x $(REPO_ROOT)/vendor/github.com/gardener/gardener-extensions/hack/*
-	@chmod +x $(REPO_ROOT)/vendor/github.com/gardener/gardener-extensions/.ci/*
+	@chmod +x $(REPO_ROOT)/vendor/github.com/gardener/gardener-extensions/hack/.ci/*
 
 .PHONY: start
 start:
