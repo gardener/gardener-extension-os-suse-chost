@@ -6,6 +6,7 @@ YmFy
 EOF
 chmod '0600' '/foo'
 
+
 cat << EOF | base64 -d > '/etc/systemd/system/docker.service'
 dW5pdA==
 EOF
