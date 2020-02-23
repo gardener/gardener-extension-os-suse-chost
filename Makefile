@@ -14,8 +14,8 @@
 
 EXTENSION_PREFIX            := gardener-extension
 NAME                        := os-suse-jeos
-REGISTRY                    := nimrodoron
-IMAGE_PREFIX                := $(REGISTRY)
+REGISTRY                    := eu.gcr.io/gardener-project
+IMAGE_PREFIX                := $(REGISTRY)/extensions
 REPO_ROOT                   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 HACK_DIR                    := $(REPO_ROOT)/hack
 VERSION                     := $(shell cat "$(REPO_ROOT)/VERSION")
