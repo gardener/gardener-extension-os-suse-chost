@@ -14,6 +14,11 @@ write_files:
   encoding: b64
   content: |
     W1VuaXRdCkRlc2NyaXB0aW9uPWNvbnRhaW5lcmQgY29udGFpbmVyIHJ1bnRpbWUKRG9jdW1lbnRhdGlvbj1odHRwczovL2NvbnRhaW5lcmQuaW8KQWZ0ZXI9bmV0d29yay50YXJnZXQKW1NlcnZpY2VdCkV4ZWNTdGFydD0vdXNyL3NiaW4vY29udGFpbmVyZCAtLWNvbmZpZz0vZXRjL2NvbnRhaW5lcmQvY29uZmlnLnRvbWwKRGVsZWdhdGU9eWVzCktpbGxNb2RlPXByb2Nlc3MKIyBIYXZpbmcgbm9uLXplcm8gTGltaXQqcyBjYXVzZXMgcGVyZm9ybWFuY2UgcHJvYmxlbXMgZHVlIHRvIGFjY291bnRpbmcgb3ZlcmhlYWQKIyBpbiB0aGUga2VybmVsLiBXZSByZWNvbW1lbmQgdXNpbmcgY2dyb3VwcyB0byBkbyBjb250YWluZXItbG9jYWwgYWNjb3VudGluZy4KTGltaXROUFJPQz1pbmZpbml0eQpMaW1pdENPUkU9aW5maW5pdHkKTGltaXROT0ZJTEU9aW5maW5pdHkKIyBDb21tZW50IFRhc2tzTWF4IGlmIHlvdXIgc3lzdGVtZCB2ZXJzaW9uIGRvZXMgbm90IHN1cHBvcnRzIGl0LgojIE9ubHkgc3lzdGVtZCAyMjYgYW5kIGFib3ZlIHN1cHBvcnQgdGhpcyB2ZXJzaW9uLgpUYXNrc01heD1pbmZpbml0eQpbSW5zdGFsbF0KV2FudGVkQnk9bXVsdGktdXNlci50YXJnZXQ=
+- path: '/etc/metadata/containerruntime'
+  permissions: '0644'
+  encoding: b64
+  content: |
+    Q09OVEFJTkVSX1JVTlRJTUVfQklOX1BBVEg9L3Vzci9zYmlu
 {{ end -}}
 {{- range $_, $unit := .Units -}}
 {{ if $unit.Content -}}
@@ -33,6 +38,12 @@ write_files:
 {{- end }}
 runcmd:
 - "until zypper -q install -y docker wget socat jq nfs-client; [ $? -ne 7 ]; do sleep 1; done"
+{{ if .IsContainerDEnabled -}}
+- zypper addrepo -G http://download.opensuse.org/update/openSUSE-stable upstream
+- zypper -n refresh
+- zypper install -y containerd-ctr-$(rpm -q --queryformat "%{VERSION}" containerd)
+- cp /usr/sbin/containerd-ctr /usr/sbin/ctr
+{{- end }}
 - systemctl daemon-reload
 - ip link set dev eth0 mtu 1460
 - grep -q '^MTU' /etc/sysconfig/network/ifcfg-eth0 && sed -i 's/^MTU.*/MTU=1460/' /etc/sysconfig/network/ifcfg-eth0 || echo 'MTU=1460' >> /etc/sysconfig/network/ifcfg-eth0

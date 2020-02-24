@@ -10,6 +10,10 @@ chmod '0600' '/foo'
 cat << EOF | base64 -d > '/etc/systemd/system/containerd.service'
 W1VuaXRdCkRlc2NyaXB0aW9uPWNvbnRhaW5lcmQgY29udGFpbmVyIHJ1bnRpbWUKRG9jdW1lbnRhdGlvbj1odHRwczovL2NvbnRhaW5lcmQuaW8KQWZ0ZXI9bmV0d29yay50YXJnZXQKW1NlcnZpY2VdCkV4ZWNTdGFydD0vdXNyL3NiaW4vY29udGFpbmVyZCAtLWNvbmZpZz0vZXRjL2NvbnRhaW5lcmQvY29uZmlnLnRvbWwKRGVsZWdhdGU9eWVzCktpbGxNb2RlPXByb2Nlc3MKIyBIYXZpbmcgbm9uLXplcm8gTGltaXQqcyBjYXVzZXMgcGVyZm9ybWFuY2UgcHJvYmxlbXMgZHVlIHRvIGFjY291bnRpbmcgb3ZlcmhlYWQKIyBpbiB0aGUga2VybmVsLiBXZSByZWNvbW1lbmQgdXNpbmcgY2dyb3VwcyB0byBkbyBjb250YWluZXItbG9jYWwgYWNjb3VudGluZy4KTGltaXROUFJPQz1pbmZpbml0eQpMaW1pdENPUkU9aW5maW5pdHkKTGltaXROT0ZJTEU9aW5maW5pdHkKIyBDb21tZW50IFRhc2tzTWF4IGlmIHlvdXIgc3lzdGVtZCB2ZXJzaW9uIGRvZXMgbm90IHN1cHBvcnRzIGl0LgojIE9ubHkgc3lzdGVtZCAyMjYgYW5kIGFib3ZlIHN1cHBvcnQgdGhpcyB2ZXJzaW9uLgpUYXNrc01heD1pbmZpbml0eQpbSW5zdGFsbF0KV2FudGVkQnk9bXVsdGktdXNlci50YXJnZXQ=
 EOF
+mkdir -p /etc/metadata
+cat << EOF | base64 -d > '/etc/metadata/containerruntime'
+Q09OVEFJTkVSX1JVTlRJTUVfQklOX1BBVEg9L3Vzci9zYmlu
+EOF
 cat << EOF | base64 -d > '/etc/systemd/system/docker.service'
 dW5pdA==
 EOF
@@ -18,16 +22,14 @@ mkdir -p '/etc/systemd/system/docker.service.d'
 cat << EOF | base64 -d > '/etc/systemd/system/docker.service.d/10-docker-opts.conf'
 b3ZlcnJpZGU=
 EOF
-
 until zypper -q install -y docker wget socat jq nfs-client; [ $? -ne 7 ]; do sleep 1; done
+zypper addrepo -G http://download.opensuse.org/update/openSUSE-stable upstream
+zypper -n refresh
+zypper install -y containerd-ctr-$(rpm -q --queryformat "%{VERSION}" containerd)
+cp /usr/sbin/containerd-ctr /usr/sbin/ctr
+
 systemctl daemon-reload
 ip link set dev eth0 mtu 1460
 grep -q '^MTU' /etc/sysconfig/network/ifcfg-eth0 && sed -i 's/^MTU.*/MTU=1460/' /etc/sysconfig/network/ifcfg-eth0 || echo 'MTU=1460' >> /etc/sysconfig/network/ifcfg-eth0
-ln -s /usr/bin/docker /bin/docker
-ln -s /bin/ip /usr/bin/ip
-ln -s /usr/sbin/docker-runc /usr/sbin/runc
-if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
-systemctl restart docker
-systemctl enable 'docker.service' && systemctl restart 'docker.service'
 rm -rf /etc/containerd/config.toml
 systemctl enable containerd.service && systemctl restart containerd.service
