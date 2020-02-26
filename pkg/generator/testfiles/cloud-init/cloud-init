@@ -1,5 +1,10 @@
 #cloud-config
 write_files:
+- path: '/etc/docker/daemon.json'
+  permissions: '0644'
+  encoding: b64
+  content: |
+    ewogICJsb2ctbGV2ZWwiOiAid2FybiIsCiAgImxvZy1kcml2ZXIiOiAianNvbi1maWxlIgp9Cg==
 - path: '/foo'
   permissions: '0600'
   encoding: b64

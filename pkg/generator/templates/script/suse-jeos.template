@@ -5,6 +5,16 @@ cat << EOF | base64 -d > '{{ .Path }}'
 EOF
 {{- end }}
 
+{{ if .Bootstrap -}}
+# disable the default log rotation
+cat <<EOF > /etc/docker/daemon.json
+{
+  "log-level": "warn",
+  "log-driver": "json-file"
+}
+EOF
+{{ end -}}
+
 {{ range $_, $file := .Files -}}
 mkdir -p '{{ $file.Dirname }}'
 {{ template "put-content" $file }}
