@@ -12,7 +12,6 @@ gardener-extension-os-suse-jeos:
             image: 'eu.gcr.io/gardener-project/gardener/extensions/os-suse-jeos'
             dockerfile: 'Dockerfile'
             target: gardener-extension-os-suse-jeos
-    steps: ~
   jobs:
     head-update:
       traits:

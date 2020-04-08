@@ -17,9 +17,9 @@ package main
 import (
 	"github.com/gardener/gardener-extension-os-suse-jeos/cmd/gardener-extension-os-suse-jeos/app"
 
-	extcontroller "github.com/gardener/gardener-extensions/pkg/controller"
-	controllercmd "github.com/gardener/gardener-extensions/pkg/controller/cmd"
-	"github.com/gardener/gardener-extensions/pkg/log"
+	extcontroller "github.com/gardener/gardener/extensions/pkg/controller"
+	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
+	"github.com/gardener/gardener/extensions/pkg/log"
 	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
