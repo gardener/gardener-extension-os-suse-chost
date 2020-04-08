@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # disable the default log rotation
+mkdir -p /etc/docker/
 cat <<EOF > /etc/docker/daemon.json
 {
   "log-level": "warn",
@@ -22,13 +23,17 @@ cat << EOF | base64 -d > '/etc/systemd/system/docker.service.d/10-docker-opts.co
 b3ZlcnJpZGU=
 EOF
 
+if [[ -d /sys/class/net/eth0 ]]
+then
+  ip link set dev eth0 mtu 1460
+  grep -q '^MTU' /etc/sysconfig/network/ifcfg-eth0 && sed -i 's/^MTU.*/MTU=1460/' /etc/sysconfig/network/ifcfg-eth0 || echo 'MTU=1460' >> /etc/sysconfig/network/ifcfg-eth0
+  wicked ifreload eth0
+fi
 until zypper -q install -y docker wget socat jq nfs-client; [ $? -ne 7 ]; do sleep 1; done
-systemctl daemon-reload
-ip link set dev eth0 mtu 1460
-grep -q '^MTU' /etc/sysconfig/network/ifcfg-eth0 && sed -i 's/^MTU.*/MTU=1460/' /etc/sysconfig/network/ifcfg-eth0 || echo 'MTU=1460' >> /etc/sysconfig/network/ifcfg-eth0
-wicked ifreload eth0
 ln -s /usr/bin/docker /bin/docker
 ln -s /bin/ip /usr/bin/ip
 if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
-systemctl restart docker
+systemctl daemon-reload
+systemctl enable docker && systemctl restart docker
+systemctl daemon-reload
 systemctl enable 'docker.service' && systemctl restart 'docker.service'

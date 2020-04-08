@@ -33,17 +33,16 @@ write_files:
 {{- end -}}
 {{- end }}
 runcmd:
-- "until zypper -q install -y docker wget socat jq nfs-client; [ $? -ne 7 ]; do sleep 1; done"
-- systemctl daemon-reload
-- ip link set dev eth0 mtu 1460
-- grep -q '^MTU' /etc/sysconfig/network/ifcfg-eth0 && sed -i 's/^MTU.*/MTU=1460/' /etc/sysconfig/network/ifcfg-eth0 || echo 'MTU=1460' >> /etc/sysconfig/network/ifcfg-eth0
-- wicked ifreload eth0
+- if [[ -d /sys/class/net/eth0 ]]; then ip link set dev eth0 mtu 1460; grep -q '^MTU' /etc/sysconfig/network/ifcfg-eth0 && sed -i 's/^MTU.*/MTU=1460/' /etc/sysconfig/network/ifcfg-eth0 || echo 'MTU=1460' >> /etc/sysconfig/network/ifcfg-eth0; wicked ifreload eth0; fi
 {{ if .Bootstrap -}}
+- "until zypper -q install -y docker wget socat jq nfs-client; [ $? -ne 7 ]; do sleep 1; done"
 - ln -s /usr/bin/docker /bin/docker
 - ln -s /bin/ip /usr/bin/ip
 - if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
-- systemctl start docker
+- systemctl daemon-reload
+- systemctl enable docker && systemctl restart docker
 {{ end -}}
+- systemctl daemon-reload
 {{ range $_, $unit := .Units -}}
 - systemctl enable '{{ $unit.Name }}' && systemctl restart '{{ $unit.Name }}'
 {{ end -}}
