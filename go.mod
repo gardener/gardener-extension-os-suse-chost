@@ -3,7 +3,7 @@ module github.com/gardener/gardener-extension-os-suse-jeos
 go 1.13
 
 require (
-	github.com/gardener/gardener v1.2.1-0.20200408030154-40b97d31d7f7
+	github.com/gardener/gardener v1.2.1-0.20200408132722-771e7e973cae
 	github.com/gobuffalo/packr v1.30.1
 	github.com/gobuffalo/packr/v2 v2.5.1
 	github.com/onsi/ginkgo v1.10.1
