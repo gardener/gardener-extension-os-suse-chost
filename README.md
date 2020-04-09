@@ -3,7 +3,7 @@
 [![CI Build status](https://concourse.ci.gardener.cloud/api/v1/teams/gardener/pipelines/gardener-extension-os-suse-jeos-master/jobs/master-head-update-job/badge)](https://concourse.ci.gardener.cloud/teams/gardener/pipelines/gardener-extension-os-suse-jeos-master/jobs/master-head-update-job)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gardener/gardener-extension-os-suse-jeos)](https://goreportcard.com/report/github.com/gardener/gardener-extension-os-suse-jeos)
 
-This controller operates on the [`OperatingSystemConfig`](https://github.com/gardener/gardener/blob/master/docs/proposals/01-extensibility.md#cloud-config-user-data-for-bootstrapping-machines) resource in the `extensions.gardener.cloud/v1alpha1` API group. It manages those objects that are requesting [SUSE JeOS](https://www.suse.com/products/server/jeos/) configuration (`.spec.type=suse-jeos`):
+This controller operates on the [`OperatingSystemConfig`](https://github.com/gardener/gardener/blob/master/docs/proposals/01-extensibility.md#cloud-config-user-data-for-bootstrapping-machines) resource in the `extensions.gardener.cloud/v1alpha1` API group. It manages those objects that are requesting [SUSE JeOS](https://www.suse.com/products/server/jeos/) configuration and supports both types: (`.spec.type=suse-jeos`): and (`.spec.type=suse-chost`):
 
 ```yaml
 ---

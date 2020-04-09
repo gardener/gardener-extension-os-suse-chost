@@ -24,6 +24,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	ctrlName = "suse-jeos"
+	osTypes  = []string{"suse-jeos", "suse-chost"}
+)
+
 // NewControllerCommand returns a new Command with a new Generator
 func NewControllerCommand(ctx context.Context) *cobra.Command {
 	g, err := generator.NewCloudInitGenerator()
@@ -31,5 +36,5 @@ func NewControllerCommand(ctx context.Context) *cobra.Command {
 		cmd.LogErrAndExit(err, "Could not create Generator")
 	}
 
-	return app.NewControllerCommand(ctx, "suse-jeos", g)
+	return app.NewControllerCommand(ctx, ctrlName, osTypes, g)
 }
