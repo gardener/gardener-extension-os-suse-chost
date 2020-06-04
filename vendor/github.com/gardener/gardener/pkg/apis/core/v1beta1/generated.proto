@@ -20,6 +20,7 @@ syntax = 'proto2';
 
 package github.com.gardener.gardener.pkg.apis.core.v1beta1;
 
+import "k8s.io/api/autoscaling/v1/generated.proto";
 import "k8s.io/api/core/v1/generated.proto";
 import "k8s.io/api/rbac/v1/generated.proto";
 import "k8s.io/apimachinery/pkg/api/resource/generated.proto";
@@ -357,6 +358,10 @@ message Condition {
 
   // A human readable message indicating details about the transition.
   optional string message = 6;
+
+  // Well-defined error codes in case the condition reports a problem.
+  // +optional
+  repeated string codes = 7;
 }
 
 // ContainerRuntime contains information about worker's available container runtime
@@ -377,6 +382,16 @@ message ControllerDeployment {
   // ProviderConfig contains type-specific configuration.
   // +optional
   optional ProviderConfig providerConfig = 2;
+
+  // Policy controls how the controller is deployed. It defaults to 'OnDemand'.
+  // +optional
+  optional string policy = 3;
+
+  // SeedSelector contains an optional label selector for seeds. Only if the labels match then this controller will be
+  // considered for a deployment.
+  // An empty list means that all seeds are selected.
+  // +optional
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector seedSelector = 4;
 }
 
 // ControllerInstallation represents an installation request for an external controller.
@@ -446,6 +461,7 @@ message ControllerRegistrationList {
 message ControllerRegistrationSpec {
   // Resources is a list of combinations of kinds (DNSProvider, Infrastructure, Generic, ...) and their actual types
   // (aws-route53, gcp, auditlog, ...).
+  // +optional
   repeated ControllerResource resources = 1;
 
   // Deployment contains information for how this controller is deployed.
@@ -469,6 +485,12 @@ message ControllerResource {
   // ReconcileTimeout defines how long Gardener should wait for the resource reconciliation.
   // +optional
   optional k8s.io.apimachinery.pkg.apis.meta.v1.Duration reconcileTimeout = 4;
+
+  // Primary determines if the controller backed by this ControllerRegistration is responsible for the extension
+  // resource's lifecycle. This field defaults to true. There must be exactly one primary controller for this kind/type
+  // combination.
+  // +optional
+  optional bool primary = 5;
 }
 
 // DNS holds information about the provider, the hosted zone id and the domain.
@@ -556,6 +578,10 @@ message Extension {
   // ProviderConfig is the configuration passed to extension resource.
   // +optional
   optional ProviderConfig providerConfig = 2;
+
+  // Disabled allows to disable extensions that were marked as 'globally enabled' by Gardener administrators.
+  // +optional
+  optional bool disabled = 3;
 }
 
 // Gardener holds the information about the Gardener version that operated a resource.
@@ -696,6 +722,13 @@ message KubeProxyConfig {
 // KubeSchedulerConfig contains configuration settings for the kube-scheduler.
 message KubeSchedulerConfig {
   optional KubernetesConfig kubernetesConfig = 1;
+
+  // KubeMaxPDVols allows to configure the `KUBE_MAX_PD_VOLS` environment variable for the kube-scheduler.
+  // Please find more information here: https://kubernetes.io/docs/concepts/storage/storage-limits/#custom-limits
+  // Note that using this field is considered alpha-/experimental-level and is on your own risk. You should be aware
+  // of all the side-effects and consequences when changing it.
+  // +optional
+  optional string kubeMaxPDVols = 2;
 }
 
 // KubeletConfig contains configuration settings for the kubelet.
@@ -768,6 +801,10 @@ message KubeletConfig {
   // +optional
   // Default: 1m
   optional k8s.io.apimachinery.pkg.apis.meta.v1.Duration imagePullProgressDeadline = 12;
+
+  // FailSwapOn makes the Kubelet fail to start if swap is enabled on the node. (default true).
+  // +optional
+  optional bool failSwapOn = 13;
 }
 
 // KubeletConfigEviction contains kubelet eviction thresholds supporting either a resource.Quantity or a percentage based value.
@@ -1008,6 +1045,12 @@ message Maintenance {
   // TimeWindow contains information about the time window for maintenance operations.
   // +optional
   optional MaintenanceTimeWindow timeWindow = 2;
+
+  // ConfineSpecUpdateRollout prevents that changes/updates to the shoot specification will be rolled out immediately.
+  // Instead, they are rolled out during the shoot's maintenance time window. There is one exception that will trigger
+  // an immediate roll out which is changes to the Spec.Hibernation.Enabled field.
+  // +optional
+  optional bool confineSpecUpdateRollout = 3;
 }
 
 // MaintenanceAutoUpdate contains information about which constraints should be automatically updated.
@@ -1035,6 +1078,15 @@ message Monitoring {
   // Alerting contains information about the alerting configuration for the shoot cluster.
   // +optional
   optional Alerting alerting = 1;
+}
+
+// NamedResourceReference is a named reference to a resource.
+message NamedResourceReference {
+  // Name of the resource reference.
+  optional string name = 1;
+
+  // ResourceRef is a reference to a resource.
+  optional k8s.io.api.autoscaling.v1.CrossVersionObjectReference resourceRef = 2;
 }
 
 // Networking defines networking parameters for the shoot cluster.
@@ -1262,6 +1314,10 @@ message ProjectSpec {
   // A nil value means that Gardener will determine the name of the namespace.
   // +optional
   optional string namespace = 6;
+
+  // Tolerations contains the tolerations for taints on seed clusters.
+  // +optional
+  optional ProjectTolerations tolerations = 7;
 }
 
 // ProjectStatus holds the most recently observed status of the project.
@@ -1272,6 +1328,22 @@ message ProjectStatus {
 
   // Phase is the current phase of the project.
   optional string phase = 2;
+}
+
+// ProjectTolerations contains the tolerations for taints on seed clusters.
+message ProjectTolerations {
+  // Defaults contains a list of tolerations that are added to the shoots in this project by default.
+  // +patchMergeKey=key
+  // +patchStrategy=merge
+  // +optional
+  repeated Toleration defaults = 1;
+
+  // Whitelist contains a list of tolerations that are allowed to be added to the shoots in this project. Please note
+  // that this list may only be added by users having the `spec-tolerations-whitelist` verb for project resources.
+  // +patchMergeKey=key
+  // +patchStrategy=merge
+  // +optional
+  repeated Toleration whitelist = 2;
 }
 
 // Provider contains provider-specific information that are handed-over to the provider-specific
@@ -1346,6 +1418,12 @@ message Region {
   // +patchStrategy=merge
   // +optional
   repeated AvailabilityZone zones = 2;
+
+  // Labels is an optional set of key-value pairs that contain certain administrator-controlled labels for this region.
+  // It can be used by Gardener administrators/operators to provide additional information about a region, e.g. wrt
+  // quality, reliability, access restrictions, etc.
+  // +optional
+  map<string, string> labels = 3;
 }
 
 message SecretBinding {
@@ -1446,8 +1524,63 @@ message SeedProvider {
   // Type is the name of the provider.
   optional string type = 1;
 
+  // ProviderConfig is the configuration passed to Seed resource.
+  // +optional
+  optional ProviderConfig providerConfig = 2;
+
   // Region is a name of a region.
-  optional string region = 2;
+  optional string region = 3;
+}
+
+// SeedSettingExcessCapacityReservation controls the excess capacity reservation for shoot control planes in the
+// seed. When enabled then this is done via PodPriority and requires the Seed cluster to have Kubernetes version 1.11
+// or the PodPriority feature gate as well as the scheduling.k8s.io/v1alpha1 API group enabled.
+message SeedSettingExcessCapacityReservation {
+  // Enabled controls whether the excess capacity reservation should be enabled.
+  optional bool enabled = 1;
+}
+
+// SeedSettingLoadBalancerServices controls certain settings for services of type load balancer that are created in the
+// seed.
+message SeedSettingLoadBalancerServices {
+  // Annotations is a map of annotations that will be injected/merged into every load balancer service object.
+  // +optional
+  map<string, string> annotations = 1;
+}
+
+// SeedSettingScheduling controls settings for scheduling decisions for the seed.
+message SeedSettingScheduling {
+  // Visible controls whether the gardener-scheduler shall consider this seed when scheduling shoots. Invisible seeds
+  // are not considered by the scheduler.
+  optional bool visible = 1;
+}
+
+// SeedSettingShootDNS controls the shoot DNS settings for the seed.
+message SeedSettingShootDNS {
+  // Enabled controls whether the DNS for shoot clusters should be enabled. When disabled then all shoots using the
+  // seed won't get any DNS providers, DNS records, and no DNS extension controller is required to be installed here.
+  // This is useful for environments where DNS is not required.
+  optional bool enabled = 1;
+}
+
+// SeedSettings contains certain settings for this seed cluster.
+message SeedSettings {
+  // ExcessCapacityReservation controls the excess capacity reservation for shoot control planes in the seed.
+  // +optional
+  optional SeedSettingExcessCapacityReservation excessCapacityReservation = 1;
+
+  // Scheduling controls settings for scheduling decisions for the seed.
+  // +optional
+  optional SeedSettingScheduling scheduling = 2;
+
+  // ShootDNS controls the shoot DNS settings for the seed.
+  // +optional
+  optional SeedSettingShootDNS shootDNS = 3;
+
+  // LoadBalancerServices controls certain settings for services of type load balancer that are created in the
+  // seed.
+  // +optional
+  optional SeedSettingLoadBalancerServices loadBalancerServices = 4;
 }
 
 // SeedSpec is the specification of a Seed.
@@ -1480,6 +1613,10 @@ message SeedSpec {
   // Volume contains settings for persistentvolumes created in the seed cluster.
   // +optional
   optional SeedVolume volume = 7;
+
+  // Settings contains certain settings for this seed cluster.
+  // +optional
+  optional SeedSettings settings = 8;
 }
 
 // SeedStatus is the status of a Seed.
@@ -1655,6 +1792,20 @@ message ShootSpec {
   // SeedName is the name of the seed cluster that runs the control plane of the Shoot.
   // +optional
   optional string seedName = 14;
+
+  // SeedSelector is an optional selector which must match a seed's labels for the shoot to be scheduled on that seed.
+  // +optional
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector seedSelector = 15;
+
+  // Resources holds a list of named resource references that can be referred to in extension configs by their names.
+  // +optional
+  repeated NamedResourceReference resources = 16;
+
+  // Tolerations contains the tolerations for taints on seed clusters.
+  // +patchMergeKey=key
+  // +patchStrategy=merge
+  // +optional
+  repeated Toleration tolerations = 17;
 }
 
 // ShootStatus holds the most recently observed status of the Shoot cluster.
@@ -1707,6 +1858,16 @@ message ShootStatus {
   // UID is a unique identifier for the Shoot cluster to avoid portability between Kubernetes clusters.
   // It is used to compute unique hashes.
   optional string uid = 11;
+}
+
+// Toleration is a toleration for a seed taint.
+message Toleration {
+  // Key is the toleration key to be applied to a project or shoot.
+  optional string key = 1;
+
+  // Value is the toleration value corresponding to the toleration key.
+  // +optional
+  optional string value = 2;
 }
 
 // Volume contains information about the volume type and size.

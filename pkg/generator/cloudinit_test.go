@@ -12,26 +12,82 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package generator
+package generator_test
 
 import (
 	"os"
 
+	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost"
+	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/generator"
+	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/susejeos"
+
+	oscommongenerator "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/generator"
 	"github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/generator/test"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gobuffalo/packr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/utils/pointer"
 )
 
 var _ = Describe("Cloud-init Generator Test", func() {
 	var box = packr.NewBox("./testfiles/cloud-init")
-	os.Setenv(BootCommand, "cloud-init-command")
-	os.Setenv(OsConfigFormat, "cloud-init")
-	generator, err := NewCloudInitGenerator()
+	os.Setenv(generator.BootCommand, "cloud-init-command")
+	os.Setenv(generator.OSConfigFormat, generator.OSConfigFormatCloudInit)
+	gen, err := generator.NewCloudInitGenerator()
 
 	It("should not fail creating generator", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	Describe("Conformance Tests Cloud Init", test.DescribeTest(generator, box))
+	Describe("Conformance Tests Cloud Init", test.DescribeTest(gen, box))
+
+	Context("memory one", func() {
+		var (
+			onlyOwnerPerm = int32(0600)
+			osConfig      = &oscommongenerator.OperatingSystemConfig{
+				Object: &extensionsv1alpha1.OperatingSystemConfig{
+					Spec: extensionsv1alpha1.OperatingSystemConfigSpec{
+						DefaultSpec: extensionsv1alpha1.DefaultSpec{
+							Type: susejeos.OSTypeMemoryOneCHost,
+							ProviderConfig: &runtime.RawExtension{
+								Raw: encode(&memoryonechost.OperatingSystemConfiguration{
+									MemoryTopology: pointer.StringPtr("3"),
+									SystemMemory:   pointer.StringPtr("7x"),
+								}),
+							},
+						},
+						Purpose: extensionsv1alpha1.OperatingSystemConfigPurposeProvision,
+					},
+				},
+				Files: []*oscommongenerator.File{
+					{
+						Path:        "/foo",
+						Content:     []byte("bar"),
+						Permissions: &onlyOwnerPerm,
+					},
+				},
+
+				Units: []*oscommongenerator.Unit{
+					{
+						Name:    "docker.service",
+						Content: []byte("unit"),
+						DropIns: []*oscommongenerator.DropIn{
+							{
+								Name:    "10-docker-opts.conf",
+								Content: []byte("override"),
+							},
+						},
+					},
+				},
+				Bootstrap: true,
+			}
+		)
+
+		It("should fail to render because format type not supported", func() {
+			_, _, err := gen.Generate(osConfig)
+			Expect(err).To(HaveOccurred())
+		})
+	})
 })

@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package generator
+package generator_test
 
 import (
 	"os"
+
+	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/generator"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,40 +26,40 @@ import (
 var _ = Describe("JeOS Cloud-init Generator Test", func() {
 
 	It("should not fail creating generator without OS_CONFIG_FORMAT variable", func() {
-		os.Unsetenv(OsConfigFormat)
-		os.Setenv(BootCommand, "boot-command")
-		_, err := NewCloudInitGenerator()
+		os.Unsetenv(generator.OSConfigFormat)
+		os.Setenv(generator.BootCommand, "boot-command")
+		_, err := generator.NewCloudInitGenerator()
 
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("should not fail creating generator with empty OS_CONFIG_FORMAT variable", func() {
-		os.Setenv(OsConfigFormat, "")
-		os.Setenv(BootCommand, "boot-command")
-		_, err := NewCloudInitGenerator()
+		os.Setenv(generator.OSConfigFormat, "")
+		os.Setenv(generator.BootCommand, "boot-command")
+		_, err := generator.NewCloudInitGenerator()
 
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("should not fail creating generator with empty BOOT_COMMAND variable", func() {
-		os.Setenv(OsConfigFormat, "")
-		os.Setenv(BootCommand, "")
-		_, err := NewCloudInitGenerator()
+		os.Setenv(generator.OSConfigFormat, "")
+		os.Setenv(generator.BootCommand, "")
+		_, err := generator.NewCloudInitGenerator()
 
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("should not fail creating generator without BOOT_COMMAND variable", func() {
-		os.Unsetenv(BootCommand)
-		_, err := NewCloudInitGenerator()
+		os.Unsetenv(generator.BootCommand)
+		_, err := generator.NewCloudInitGenerator()
 
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("should fail creating generator with invalid OS_CONFIG_FORMAT", func() {
-		os.Setenv(OsConfigFormat, "invalid-format")
-		os.Setenv(BootCommand, "some command")
-		_, err := NewCloudInitGenerator()
+		os.Setenv(generator.OSConfigFormat, "invalid-format")
+		os.Setenv(generator.BootCommand, "some command")
+		_, err := generator.NewCloudInitGenerator()
 
 		Expect(err).To(HaveOccurred())
 	})

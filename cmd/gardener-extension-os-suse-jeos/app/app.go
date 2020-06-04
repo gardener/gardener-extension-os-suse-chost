@@ -18,23 +18,25 @@ import (
 	"context"
 
 	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/generator"
+	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/susejeos"
 
 	"github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/app"
 	"github.com/spf13/cobra"
 )
 
-var (
-	ctrlName = "suse-jeos"
-	osTypes  = []string{"suse-jeos", "suse-chost"}
-)
-
 // NewControllerCommand returns a new Command with a new Generator
 func NewControllerCommand(ctx context.Context) *cobra.Command {
-	g, err := generator.NewCloudInitGenerator()
+	generator, err := generator.NewCloudInitGenerator()
 	if err != nil {
 		cmd.LogErrAndExit(err, "Could not create Generator")
 	}
 
-	return app.NewControllerCommand(ctx, ctrlName, osTypes, g)
+	osTypes := []string{
+		susejeos.OSTypeSuSEJeOS,
+		susejeos.OSTypeSuSECHost,
+		susejeos.OSTypeMemoryOneCHost,
+	}
+
+	return app.NewControllerCommand(ctx, susejeos.ControllerName, osTypes, generator)
 }

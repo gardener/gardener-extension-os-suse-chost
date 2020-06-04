@@ -5,7 +5,7 @@ metadata:
   name: pool-01-original
   namespace: default
 spec:
-  type: suse-jeos
+  type: suse-chost # alternatively: suse-jeos
   units:
   - name: docker.service
     dropIns:
@@ -32,7 +32,7 @@ spec:
     encoding: b64
     content:
       secretRef:
-        name: default-token-vv9b8
+        name: default-token-4lxwb
         dataKey: token
   - path: /etc/sysctl.d/99-k8s-general.conf
     permissions: 0644
