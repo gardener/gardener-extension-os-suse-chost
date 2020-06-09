@@ -68,6 +68,10 @@ type CloudProfileSpec struct {
 	VolumeTypes []VolumeType
 }
 
+func (c *CloudProfile) GetProviderType() string {
+	return c.Spec.Type
+}
+
 // KubernetesSettings contains constraints regarding allowed values of the 'kubernetes' block in the Shoot specification.
 type KubernetesSettings struct {
 	// Versions is the list of allowed Kubernetes versions with optional expiration dates for Shoot clusters.
@@ -124,6 +128,10 @@ type Region struct {
 	Name string
 	// Zones is a list of availability zones in this region.
 	Zones []AvailabilityZone
+	// Labels is an optional set of key-value pairs that contain certain administrator-controlled labels for this region.
+	// It can be used by Gardener administrators/operators to provide additional information about a region, e.g. wrt
+	// quality, reliability, access restrictions, etc.
+	Labels map[string]string
 }
 
 // AvailabilityZone is an availability zone.

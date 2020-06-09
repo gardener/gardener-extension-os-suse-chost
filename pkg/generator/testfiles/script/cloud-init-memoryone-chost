@@ -1,0 +1,57 @@
+Content-Type: multipart/mixed; boundary="==BOUNDARY=="
+MIME-Version: 1.0
+--==BOUNDARY==
+Content-Type: text/x-vsmp; section=vsmp
+system_memory=7x
+mem_topology=3
+--==BOUNDARY==
+Content-Type: text/x-shellscript
+#!/bin/bash
+
+zypper addrepo https://download.opensuse.org/repositories/Archiving/SLE_15_SP1/Archiving.repo
+zypper --non-interactive --no-gpg-checks install bzip2
+
+mkdir /run/vsmp
+wget "http://www.scalemp.com/downloads/others/EC2/latest/vsmp_installer.sh" -O /run/vsmp/vsmp_installer.sh
+chmod 755 /run/vsmp/vsmp_installer.sh
+/run/vsmp/vsmp_installer.sh in -tq
+
+# disable the default log rotation
+mkdir -p /etc/docker/
+cat <<EOF > /etc/docker/daemon.json
+{
+  "log-level": "warn",
+  "log-driver": "json-file"
+}
+EOF
+mkdir -p '/'
+cat << EOF | base64 -d > '/foo'
+YmFy
+EOF
+chmod '0600' '/foo'
+
+cat << EOF | base64 -d > '/etc/systemd/system/docker.service'
+dW5pdA==
+EOF
+
+mkdir -p '/etc/systemd/system/docker.service.d'
+cat << EOF | base64 -d > '/etc/systemd/system/docker.service.d/10-docker-opts.conf'
+b3ZlcnJpZGU=
+EOF
+
+if [[ -d /sys/class/net/eth0 ]]
+then
+  ip link set dev eth0 mtu 1460
+  grep -q '^MTU' /etc/sysconfig/network/ifcfg-eth0 && sed -i 's/^MTU.*/MTU=1460/' /etc/sysconfig/network/ifcfg-eth0 || echo 'MTU=1460' >> /etc/sysconfig/network/ifcfg-eth0
+  wicked ifreload eth0
+fi
+until zypper -q install -y docker wget socat jq nfs-client; [ $? -ne 7 ]; do sleep 1; done
+ln -s /usr/bin/docker /bin/docker
+ln -s /bin/ip /usr/bin/ip
+if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
+systemctl daemon-reload
+systemctl enable docker && systemctl restart docker
+systemctl daemon-reload
+systemctl enable 'docker.service' && systemctl restart 'docker.service'
+
+--==BOUNDARY==

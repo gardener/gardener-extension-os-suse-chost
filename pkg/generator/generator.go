@@ -15,43 +15,69 @@
 package generator
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
-	template_gen "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/template"
+	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost"
+	memoryonechostinstall "github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost/install"
+	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/susejeos"
+
+	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
+	oscommontemplate "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/template"
+	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gobuffalo/packr/v2"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
 const (
-	// OsConfigFormat format of the OSC to be generated. Must match the name of a subdirectory under
+	// OSConfigFormat format of the OSC to be generated. Must match the name of a subdirectory under
 	// the 'templates' directory. Presently 'script' and 'cloud-init' are supported
-	OsConfigFormat = "OS_CONFIG_FORMAT"
+	OSConfigFormat = "OS_CONFIG_FORMAT"
+	// OSConfigFormatScript is a constant for the 'script' config format.
+	OSConfigFormatScript = "script"
+	// OSConfigFormatCloudInit is a constant for the 'cloud-init' config format.
+	OSConfigFormatCloudInit = "cloud-init"
 
 	// BootCommand command to be executed to bootstap the OS Configuration.
 	// Depends on the OSC format and the infrastructure platform.
 	// Well known valid values are `"/bin/bash %s"` and `"/usr/bin/cloud-init clean && /usr/bin/cloud-init --file %s init"`.
 	BootCommand = "BOOT_COMMAND"
-
-	defaultOsConfigFormat = "script"
-	defaultBootCommand    = "/bin/bash %s"
+	// BootCommandBash is a constant for the /bin/bash boot command.
+	BootCommandBash = "/bin/bash %s"
 )
 
 //go:generate packr2
 
+var decoder runtime.Decoder
+
+func init() {
+	scheme := runtime.NewScheme()
+	if err := memoryonechostinstall.AddToScheme(scheme); err != nil {
+		controllercmd.LogErrAndExit(err, "Could not update scheme")
+	}
+	decoder = serializer.NewCodecFactory(scheme).UniversalDecoder()
+}
+
 // NewCloudInitGenerator creates a new Generator using the template file for suse-jeos
-func NewCloudInitGenerator() (*template_gen.CloudInitGenerator, error) {
+func NewCloudInitGenerator() (*oscommontemplate.CloudInitGenerator, error) {
 	box := packr.New("templates", "./templates")
 
-	templateName, exists := os.LookupEnv(OsConfigFormat)
-	if !exists || templateName == "" {
-		templateName = defaultOsConfigFormat
+	configFormat, ok := os.LookupEnv(OSConfigFormat)
+	if !ok || configFormat == "" {
+		configFormat = OSConfigFormatScript
 	}
-	templateName = strings.ToLower(templateName) + "/suse-jeos.template"
+	if configFormat != OSConfigFormatScript && configFormat != OSConfigFormatCloudInit {
+		return nil, fmt.Errorf("unsupported value for %q", OSConfigFormat)
+	}
+	templateName := filepath.Join(strings.ToLower(configFormat), "suse-jeos.template")
 
 	bootCmd, exists := os.LookupEnv(BootCommand)
 	if !exists || bootCmd == "" {
-		bootCmd = defaultBootCommand
+		bootCmd = BootCommandBash
 	}
 
 	cloudInitTemplateString, err := box.FindString(templateName)
@@ -59,10 +85,41 @@ func NewCloudInitGenerator() (*template_gen.CloudInitGenerator, error) {
 		return nil, err
 	}
 
-	cloudInitTemplate, err := template.New("cloud-init").Parse(cloudInitTemplateString)
+	cloudInitTemplate, err := template.New("user-data").Parse(cloudInitTemplateString)
 	if err != nil {
 		return nil, err
 	}
-	generator := template_gen.NewCloudInitGenerator(cloudInitTemplate, template_gen.DefaultUnitsPath, bootCmd)
-	return generator, nil
+
+	return oscommontemplate.NewCloudInitGenerator(cloudInitTemplate, oscommontemplate.DefaultUnitsPath, bootCmd, func(osc *extensionsv1alpha1.OperatingSystemConfig) (map[string]interface{}, error) {
+		if osc.Spec.Type != susejeos.OSTypeMemoryOneCHost {
+			return nil, nil
+		}
+
+		if configFormat != OSConfigFormatScript {
+			return nil, fmt.Errorf("cannot render %q user-data for %q format - only %q is supported", susejeos.OSTypeMemoryOneCHost, configFormat, OSConfigFormatScript)
+		}
+
+		values := map[string]interface{}{
+			"MemoryTopology": "2",
+			"SystemMemory":   "6x",
+		}
+
+		if osc.Spec.ProviderConfig == nil {
+			return values, nil
+		}
+
+		obj := &memoryonechost.OperatingSystemConfiguration{}
+		if _, _, err := decoder.Decode(osc.Spec.ProviderConfig.Raw, nil, obj); err != nil {
+			return nil, fmt.Errorf("failed to decode provider config: %+v", err)
+		}
+
+		if obj.MemoryTopology != nil {
+			values["MemoryTopology"] = *obj.MemoryTopology
+		}
+		if obj.SystemMemory != nil {
+			values["SystemMemory"] = *obj.SystemMemory
+		}
+
+		return values, nil
+	}), nil
 }
