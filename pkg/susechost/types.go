@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package susejeos
+package susechost
 
 const (
 	// ControllerName is the name of the controller.
-	ControllerName = "suse-jeos"
+	ControllerName = "suse-chost"
 
-	// OSTypeSuSEJeOS is a constant for the suse-jeos extension OS type.
-	OSTypeSuSEJeOS = "suse-jeos"
 	// OSTypeSuSECHost is a constant for the suse-chost extension OS type.
 	OSTypeSuSECHost = "suse-chost"
+	// OSTypeSuSEJeOS is a constant for the suse-jeos extension OS type.
+	// Deprecated: Use `OSTypeSuSECHost` instead.
+	OSTypeSuSEJeOS = "suse-jeos"
 	// OSTypeMemoryOneCHost is a constant for the memoryone-chost extension OS type.
 	OSTypeMemoryOneCHost = "memoryone-chost"
 )

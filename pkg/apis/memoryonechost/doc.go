@@ -17,4 +17,4 @@
 
 //go:generate ../../../hack/update-codegen.sh
 
-package memoryonechost // import "github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost"
+package memoryonechost // import "github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"

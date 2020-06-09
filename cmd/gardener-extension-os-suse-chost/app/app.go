@@ -17,8 +17,8 @@ package app
 import (
 	"context"
 
-	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/generator"
-	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/susejeos"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
 
 	"github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	"github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/app"
@@ -33,10 +33,10 @@ func NewControllerCommand(ctx context.Context) *cobra.Command {
 	}
 
 	osTypes := []string{
-		susejeos.OSTypeSuSEJeOS,
-		susejeos.OSTypeSuSECHost,
-		susejeos.OSTypeMemoryOneCHost,
+		susechost.OSTypeSuSEJeOS,
+		susechost.OSTypeSuSECHost,
+		susechost.OSTypeMemoryOneCHost,
 	}
 
-	return app.NewControllerCommand(ctx, susejeos.ControllerName, osTypes, generator)
+	return app.NewControllerCommand(ctx, susechost.ControllerName, osTypes, generator)
 }

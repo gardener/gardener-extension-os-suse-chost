@@ -2,10 +2,10 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: gardener-extension-os-suse-jeos
+  name: gardener-extension-os-suse-chost
   labels:
-    app.kubernetes.io/name: gardener-extension-os-suse-jeos
-    helm.sh/chart: gardener-extension-os-suse-jeos
+    app.kubernetes.io/name: gardener-extension-os-suse-chost
+    helm.sh/chart: gardener-extension-os-suse-chost
     app.kubernetes.io/instance: {{ .Release.Name }}
 rules:
 - apiGroups:
@@ -44,7 +44,7 @@ rules:
   resources:
   - configmaps
   resourceNames:
-  - suse-jeos-leader-election
+  - suse-chost-leader-election
   verbs:
   - get
   - watch
@@ -54,16 +54,16 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: gardener-extension-os-suse-jeos
+  name: gardener-extension-os-suse-chost
   labels:
-    app.kubernetes.io/name: gardener-extension-os-suse-jeos
-    helm.sh/chart: gardener-extension-os-suse-jeos
+    app.kubernetes.io/name: gardener-extension-os-suse-chost
+    helm.sh/chart: gardener-extension-os-suse-chost
     app.kubernetes.io/instance: {{ .Release.Name }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: gardener-extension-os-suse-jeos
+  name: gardener-extension-os-suse-chost
 subjects:
 - kind: ServiceAccount
-  name: gardener-extension-os-suse-jeos
+  name: gardener-extension-os-suse-chost
   namespace: {{ .Release.Namespace }}

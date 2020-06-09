@@ -17,13 +17,13 @@ package generator_test
 import (
 	"os"
 
-	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/generator"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("JeOS Cloud-init Generator Test", func() {
+var _ = Describe("CHost Cloud-init Generator Test", func() {
 
 	It("should not fail creating generator without OS_CONFIG_FORMAT variable", func() {
 		os.Unsetenv(generator.OSConfigFormat)

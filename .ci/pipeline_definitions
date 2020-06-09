@@ -1,4 +1,4 @@
-gardener-extension-os-suse-jeos:
+gardener-extension-os-suse-chost:
   template: 'default'
   base_definition:
     repo: ~
@@ -7,11 +7,11 @@ gardener-extension-os-suse-jeos:
         preprocess: 'inject-commit-hash'
       publish:
         dockerimages:
-          gardener-extension-os-suse-jeos:
+          gardener-extension-os-suse-chost:
             registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/extensions/os-suse-jeos'
+            image: 'eu.gcr.io/gardener-project/gardener/extensions/os-suse-chost'
             dockerfile: 'Dockerfile'
-            target: gardener-extension-os-suse-jeos
+            target: gardener-extension-os-suse-chost
   jobs:
     head-update:
       traits:
@@ -42,5 +42,5 @@ gardener-extension-os-suse-jeos:
         component_descriptor: ~
         publish:
           dockerimages:
-            gardener-extension-os-suse-jeos:
+            gardener-extension-os-suse-chost:
               tag_as_latest: true

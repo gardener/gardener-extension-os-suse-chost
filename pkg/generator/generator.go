@@ -21,9 +21,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost"
-	memoryonechostinstall "github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost/install"
-	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/susejeos"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
+	memoryonechostinstall "github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost/install"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
 
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	oscommontemplate "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/template"
@@ -62,7 +62,7 @@ func init() {
 	decoder = serializer.NewCodecFactory(scheme).UniversalDecoder()
 }
 
-// NewCloudInitGenerator creates a new Generator using the template file for suse-jeos
+// NewCloudInitGenerator creates a new Generator using the template file for suse-chost
 func NewCloudInitGenerator() (*oscommontemplate.CloudInitGenerator, error) {
 	box := packr.New("templates", "./templates")
 
@@ -73,7 +73,7 @@ func NewCloudInitGenerator() (*oscommontemplate.CloudInitGenerator, error) {
 	if configFormat != OSConfigFormatScript && configFormat != OSConfigFormatCloudInit {
 		return nil, fmt.Errorf("unsupported value for %q", OSConfigFormat)
 	}
-	templateName := filepath.Join(strings.ToLower(configFormat), "suse-jeos.template")
+	templateName := filepath.Join(strings.ToLower(configFormat), "suse-chost.template")
 
 	bootCmd, exists := os.LookupEnv(BootCommand)
 	if !exists || bootCmd == "" {
@@ -91,12 +91,12 @@ func NewCloudInitGenerator() (*oscommontemplate.CloudInitGenerator, error) {
 	}
 
 	return oscommontemplate.NewCloudInitGenerator(cloudInitTemplate, oscommontemplate.DefaultUnitsPath, bootCmd, func(osc *extensionsv1alpha1.OperatingSystemConfig) (map[string]interface{}, error) {
-		if osc.Spec.Type != susejeos.OSTypeMemoryOneCHost {
+		if osc.Spec.Type != susechost.OSTypeMemoryOneCHost {
 			return nil, nil
 		}
 
 		if configFormat != OSConfigFormatScript {
-			return nil, fmt.Errorf("cannot render %q user-data for %q format - only %q is supported", susejeos.OSTypeMemoryOneCHost, configFormat, OSConfigFormatScript)
+			return nil, fmt.Errorf("cannot render %q user-data for %q format - only %q is supported", susechost.OSTypeMemoryOneCHost, configFormat, OSConfigFormatScript)
 		}
 
 		values := map[string]interface{}{

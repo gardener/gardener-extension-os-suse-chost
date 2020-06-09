@@ -17,9 +17,9 @@ package generator_test
 import (
 	"os"
 
-	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost"
-	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/generator"
-	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/susejeos"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
 
 	oscommongenerator "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/generator"
 	"github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/generator/test"
@@ -50,7 +50,7 @@ var _ = Describe("Script Generator Test", func() {
 				Object: &extensionsv1alpha1.OperatingSystemConfig{
 					Spec: extensionsv1alpha1.OperatingSystemConfigSpec{
 						DefaultSpec: extensionsv1alpha1.DefaultSpec{
-							Type: susejeos.OSTypeMemoryOneCHost,
+							Type: susechost.OSTypeMemoryOneCHost,
 							ProviderConfig: &runtime.RawExtension{
 								Raw: encode(&memoryonechost.OperatingSystemConfiguration{
 									MemoryTopology: pointer.StringPtr("3"),

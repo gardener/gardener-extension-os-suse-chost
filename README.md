@@ -1,9 +1,9 @@
-# [Gardener Extension for SUSE JeOS](https://gardener.cloud)
+# [Gardener Extension for SUSE CHost](https://gardener.cloud)
 
-[![CI Build status](https://concourse.ci.gardener.cloud/api/v1/teams/gardener/pipelines/gardener-extension-os-suse-jeos-master/jobs/master-head-update-job/badge)](https://concourse.ci.gardener.cloud/teams/gardener/pipelines/gardener-extension-os-suse-jeos-master/jobs/master-head-update-job)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gardener/gardener-extension-os-suse-jeos)](https://goreportcard.com/report/github.com/gardener/gardener-extension-os-suse-jeos)
+[![CI Build status](https://concourse.ci.gardener.cloud/api/v1/teams/gardener/pipelines/gardener-extension-os-suse-chost-master/jobs/master-head-update-job/badge)](https://concourse.ci.gardener.cloud/teams/gardener/pipelines/gardener-extension-os-suse-chost-master/jobs/master-head-update-job)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gardener/gardener-extension-os-suse-chost)](https://goreportcard.com/report/github.com/gardener/gardener-extension-os-suse-chost)
 
-This controller operates on the [`OperatingSystemConfig`](https://github.com/gardener/gardener/blob/master/docs/proposals/01-extensibility.md#cloud-config-user-data-for-bootstrapping-machines) resource in the `extensions.gardener.cloud/v1alpha1` API group. It manages those objects that are requesting [SUSE JeOS](https://www.suse.com/products/server/jeos/) configuration and supports both types: (`.spec.type=suse-jeos`): and (`.spec.type=suse-chost`):
+This controller operates on the [`OperatingSystemConfig`](https://github.com/gardener/gardener/blob/master/docs/proposals/01-extensibility.md#cloud-config-user-data-for-bootstrapping-machines) resource in the `extensions.gardener.cloud/v1alpha1` API group. It manages those objects that are requesting SUSE Container Host configuration and supports both types (`.spec.type=suse-chost` and `.spec.type=suse-jeos`):
 
 ```yaml
 ---
@@ -13,7 +13,7 @@ metadata:
   name: pool-01-original
   namespace: default
 spec:
-  type: suse-jeos
+  type: suse-chost
   units:
     ...
   files:
@@ -58,7 +58,7 @@ Static code checks and tests can be executed by running `VERIFY=true make all`. 
 
 ## Feedback and Support
 
-Feedback and contributions are always welcome. Please report bugs or suggestions as [GitHub issues](https://github.com/gardener/gardener-extension-os-suse-jeos/issues) or join our [Slack channel #gardener](https://kubernetes.slack.com/messages/gardener) (please invite yourself to the Kubernetes workspace [here](http://slack.k8s.io)).
+Feedback and contributions are always welcome. Please report bugs or suggestions as [GitHub issues](https://github.com/gardener/gardener-extension-os-suse-chost/issues) or join our [Slack channel #gardener](https://kubernetes.slack.com/messages/gardener) (please invite yourself to the Kubernetes workspace [here](http://slack.k8s.io)).
 
 ## Learn more!
 

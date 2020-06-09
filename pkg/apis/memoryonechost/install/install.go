@@ -15,8 +15,8 @@
 package install
 
 import (
-	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost"
-	"github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost/v1alpha1"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
