@@ -1,5 +1,5 @@
 image:
-  repository: eu.gcr.io/gardener-project/gardener/extensions/os-suse-jeos
+  repository: eu.gcr.io/gardener-project/gardener/extensions/os-suse-chost
   tag: latest
   pullPolicy: IfNotPresent
 

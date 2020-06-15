@@ -23,7 +23,7 @@ package v1alpha1
 import (
 	unsafe "unsafe"
 
-	memoryonechost "github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost"
+	memoryonechost "github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )

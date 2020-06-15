@@ -1,16 +1,17 @@
-# Using the SuSE JeOS extension with Gardener as end-user
+# Using the SuSE CHost extension with Gardener as end-user
 
 The [`core.gardener.cloud/v1beta1.Shoot` resource](https://github.com/gardener/gardener/blob/master/example/90-shoot.yaml) declares a few fields that must be considered when this OS extension is used.
 
 In this document we describe how this configuration looks like and under which circumstances your attention may be required.
 
-## AWS VPC settings for SuSE JeOS workers
+## AWS VPC settings for SuSE CHost workers
 
-Gardener allows you to create SuSE JeOS based worker nodes by:
+Gardener allows you to create SuSE CHost based worker nodes by:
+
 1. Using a Gardener managed VPC
 2. Reusing a VPC that already exists (VPC `id` specified in [InfrastructureConfig](https://github.com/gardener/gardener-extension-provider-aws/blob/master/docs/usage-as-end-user.md#infrastructureconfig)]
 
-If the second option applies to your use-case please make sure that your VPC has enabled **DNS Support**. Otherwise SuSE JeOS based nodes aren't able to join or operate in your cluster properly.
+If the second option applies to your use-case please make sure that your VPC has enabled **DNS Support**. Otherwise SuSE CHost based nodes aren't able to join or operate in your cluster properly.
 
 **[DNS](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html)** settings (required):
 
@@ -19,7 +20,7 @@ If the second option applies to your use-case please make sure that your VPC has
 
 ## Support for vSMP MemoryOne
 
-This extension controller is also capable of generating user-data for the [vSMP MemoryOne](https://www.scalemp.com/products/vsmp-memoryone/) operating system in conjunction with SuSE JeOS/CHost.
+This extension controller is also capable of generating user-data for the [vSMP MemoryOne](https://www.scalemp.com/products/vsmp-memoryone/) operating system in conjunction with SuSE CHost.
 It reacts on the `memoryone-chost` extension type.
 Additionally, it allows certain customizations with the following configuration:
 
@@ -34,7 +35,7 @@ systemMemory: "7x"
 * The `systemMemory` field controls the `system_memory` setting. If it's not provided then it defaults to `6x`.
 
 Please note that it was only e2e-tested on AWS.
-Additionally, you need a snapshot ID of a SuSE JeOS/CHost volume (see below how to create it).
+Additionally, you need a snapshot ID of a SuSE CHost/CHost volume (see below how to create it).
 
 An exemplary worker pool configuration inside a `Shoot` resource using for the vSMP MemoryOne operating system would look as follows:
 
@@ -66,14 +67,14 @@ spec:
       size: 20Gi
       type: gp2
     dataVolumes:
-    - name: jeos
+    - name: chost
       size: 50Gi
       type: gp2
     providerConfig:
       apiVersion: aws.provider.extensions.gardener.cloud/v1alpha1
       kind: WorkerConfig
       dataVolumes:
-      - name: jeos
+      - name: chost
         snapshotID: snap-123456
     zones:
     - eu-central-1b
@@ -81,7 +82,7 @@ spec:
 
 Please note that vSMP MemoryOne only works for EC2 bare-metal instance types such as `M5d`, `R5`, `C5`, `C5d`, etc. - please consult [the EC2 instance types overview page](https://aws.amazon.com/ec2/instance-types/) and the documentation of vSMP MemoryOne to find out whether the instance type in question is eligible.
 
-### Generating an AWS snapshot ID for the JeOS/CHost operating system
+### Generating an AWS snapshot ID for the CHost/CHost operating system
 
 The following script will help to generate the snapshot ID on AWS.
 It runs in the region that is selected in your `$HOME/.aws/config` file.

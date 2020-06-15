@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/gardener/gardener-extension-os-suse-jeos/cmd/gardener-extension-os-suse-jeos/app"
+	"github.com/gardener/gardener-extension-os-suse-chost/cmd/gardener-extension-os-suse-chost/app"
 
 	extcontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"

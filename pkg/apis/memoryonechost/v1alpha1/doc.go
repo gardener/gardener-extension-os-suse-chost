@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // +k8s:deepcopy-gen=package
-// +k8s:conversion-gen=github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost
+// +k8s:conversion-gen=github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost
 // +k8s:openapi-gen=true
 // +k8s:defaulter-gen=TypeMeta
 
@@ -21,4 +21,4 @@
 
 // Package v1alpha1 contains the v1alpha1 version of the API.
 // +groupName=memoryone-chost.os.extensions.gardener.cloud
-package v1alpha1 // import "github.com/gardener/gardener-extension-os-suse-jeos/pkg/apis/memoryonechost/v1alpha1"
+package v1alpha1 // import "github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost/v1alpha1"

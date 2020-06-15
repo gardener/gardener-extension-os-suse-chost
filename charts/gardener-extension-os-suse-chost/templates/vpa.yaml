@@ -2,12 +2,12 @@
 apiVersion: "autoscaling.k8s.io/v1beta2"
 kind: VerticalPodAutoscaler
 metadata:
-  name: gardener-extension-os-suse-jeos-vpa
+  name: gardener-extension-os-suse-chost-vpa
   namespace: {{ .Release.Namespace }}
 spec:
   targetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: gardener-extension-os-suse-jeos
+    name: gardener-extension-os-suse-chost
   updatePolicy:
     updateMode: "Auto"
