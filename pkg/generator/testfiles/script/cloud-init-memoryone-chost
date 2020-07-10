@@ -8,14 +8,6 @@ mem_topology=3
 Content-Type: text/x-shellscript
 #!/bin/bash
 
-zypper addrepo https://download.opensuse.org/repositories/Archiving/SLE_15_SP1/Archiving.repo
-zypper --non-interactive --no-gpg-checks install bzip2
-
-mkdir /run/vsmp
-wget "http://www.scalemp.com/downloads/others/EC2/latest/vsmp_installer.sh" -O /run/vsmp/vsmp_installer.sh
-chmod 755 /run/vsmp/vsmp_installer.sh
-/run/vsmp/vsmp_installer.sh in -tq
-
 # disable the default log rotation
 mkdir -p /etc/docker/
 cat <<EOF > /etc/docker/daemon.json

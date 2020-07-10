@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.1.5
-	github.com/gardener/gardener v1.6.0
+	github.com/gardener/gardener v1.7.0
 	github.com/gobuffalo/packr v1.30.1
 	github.com/gobuffalo/packr/v2 v2.5.1
 	github.com/onsi/ginkgo v1.11.0
@@ -13,7 +13,7 @@ require (
 	k8s.io/apimachinery v0.17.6
 	k8s.io/code-generator v0.17.6
 	k8s.io/utils v0.0.0-20200327001022-6496210b90e8
-	sigs.k8s.io/controller-runtime v0.5.4
+	sigs.k8s.io/controller-runtime v0.5.5
 )
 
 replace (
