@@ -89,21 +89,19 @@ It runs in the region that is selected in your `$HOME/.aws/config` file.
 Consequently, if you want to generate the snapshot in multiple regions, you have to run in multiple times after configuring the respective region using `aws configure`.
 
 ```bash
-amis=`aws ec2 describe-images --filter="Name=name,Values=suse-sles-15*chost*" --query="reverse(sort_by(Images, &Name))[*].[ImageId]" --output=text`
-for ami in $amis; do
-  name=`aws ec2 describe-images --image-ids $ami  --query="Images[].Name" --output=text`
-  cur=`aws ec2 describe-snapshots --filter="Name=description,Values=snap-$name" --query="Snapshots[].Description" --output=text`
-  if [ -n "$cur" ]; then
-    echo "AMI $name exists as snapshot $cur"
-    continue
-  fi
-  echo "AMI $name ... creating private snapshot"
-  inst=`aws ec2 run-instances --instance-type t3.nano --image-id $ami --query 'Instances[0].InstanceId' --output=text`
-  aws ec2 wait instance-running --instance-ids $inst
-  vol=`aws ec2 describe-instances --instance-ids $inst --query "Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId" --output=text`
-  snap=`aws ec2 create-snapshot --description "snap-$name" --volume-id $vol --query='SnapshotId' --tag-specifications "ResourceType=snapshot,Tags=[{Key=Name,Value=\"$name\"}]" --output=text`
-  aws ec2 wait snapshot-completed --snapshot-ids $snap
-  aws ec2 terminate-instances --instance-id $inst > /dev/null
-  break
-done
+ami="ami-1234" #Replace the ami with the intended one. 
+name=`aws ec2 describe-images --image-ids $ami  --query="Images[].Name" --output=text`
+cur=`aws ec2 describe-snapshots --filter="Name=description,Values=snap-$name" --query="Snapshots[].Description" --output=text`
+if [ -n "$cur" ]; then
+  echo "AMI $name exists as snapshot $cur"
+  continue
+fi
+echo "AMI $name ... creating private snapshot"
+inst=`aws ec2 run-instances --instance-type t3.nano --image-id $ami --query 'Instances[0].InstanceId' --output=text --subnet-id subnet-1234 --tag-specifications 'ResourceType=instance,Tags=[{Key=scalemp-test,Value=scalemp-test}]'` #Replace the subnet-id with the intended one.
+aws ec2 wait instance-running --instance-ids $inst 
+vol=`aws ec2 describe-instances --instance-ids $inst --query "Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId" --output=text`
+snap=`aws ec2 create-snapshot --description "snap-$name" --volume-id $vol --query='SnapshotId' --tag-specifications "ResourceType=snapshot,Tags=[{Key=Name,Value=\"$name\"}]" --output=text`
+aws ec2 wait snapshot-completed --snapshot-ids $snap
+aws ec2 terminate-instances --instance-id $inst > /dev/null
+echo $snap
 ```
