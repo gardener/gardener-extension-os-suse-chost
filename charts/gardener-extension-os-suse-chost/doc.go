@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:generate ../../vendor/github.com/gardener/gardener/extensions/hack/generate-controller-registration.sh os-suse-chost . ../../VERSION ../../example/controller-registration.yaml OperatingSystemConfig:suse-chost OperatingSystemConfig:memoryone-chost OperatingSystemConfig:suse-jeos
+//go:generate ../../vendor/github.com/gardener/gardener/hack/generate-controller-registration.sh os-suse-chost . ../../VERSION ../../example/controller-registration.yaml OperatingSystemConfig:suse-chost OperatingSystemConfig:memoryone-chost OperatingSystemConfig:suse-jeos
 
 // Package chart enables go:generate support for generating the correct controller registration.
 package chart
