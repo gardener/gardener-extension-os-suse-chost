@@ -31,6 +31,7 @@ cat << EOF | base64 -d > '/etc/systemd/system/docker.service.d/10-docker-opts.co
 b3ZlcnJpZGU=
 EOF
 
+
 if [[ -d /sys/class/net/eth0 ]]
 then
   ip link set dev eth0 mtu 1460
@@ -44,6 +45,9 @@ if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
 systemctl daemon-reload
 systemctl enable docker && systemctl restart docker
 systemctl daemon-reload
+
 systemctl enable 'docker.service' && systemctl restart 'docker.service'
+
+systemctl enable 'cloud-config-downloader.service' && systemctl restart 'cloud-config-downloader.service'
 
 --==BOUNDARY==

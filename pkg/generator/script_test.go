@@ -80,23 +80,37 @@ var _ = Describe("Script Generator Test", func() {
 							},
 						},
 					},
+					{
+						Name: "cloud-config-downloader.service",
+					},
 				},
 				Bootstrap: true,
 			}
-			expectedCloudInit []byte
-			err               error
+			expectedCloudInitBootstrap []byte
+			expectedCloudInitReconcile []byte
+			err                        error
 		)
 
 		BeforeEach(func() {
-			expectedCloudInit, err = box.Find("cloud-init-memoryone-chost")
+			expectedCloudInitBootstrap, err = box.Find("cloud-init-memoryone-chost-bootstrap")
+			Expect(err).NotTo(HaveOccurred())
+			expectedCloudInitReconcile, err = box.Find("cloud-init-memoryone-chost-reconcile")
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("should render correctly", func() {
+		It("should render correctly bootstrap", func() {
 			cloudInit, _, err := gen.Generate(osConfig)
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(cloudInit).To(Equal(expectedCloudInit))
+			Expect(cloudInit).To(Equal(expectedCloudInitBootstrap))
+		})
+
+		It("should render correctly reconcile", func() {
+			osConfig.Bootstrap = false
+			cloudInit, _, err := gen.Generate(osConfig)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(cloudInit).To(Equal(expectedCloudInitReconcile))
 		})
 	})
 })
