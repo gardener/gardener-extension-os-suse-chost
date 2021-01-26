@@ -36,5 +36,6 @@ if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
 systemctl daemon-reload
 systemctl enable docker && systemctl restart docker
 systemctl daemon-reload
+
 systemctl enable 'docker.service' && systemctl restart 'docker.service'
 
