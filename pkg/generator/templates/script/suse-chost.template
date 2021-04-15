@@ -58,8 +58,10 @@ until zypper -q install -y docker wget socat jq nfs-client; [ $? -ne 7 ]; do sle
 ln -s /usr/bin/docker /bin/docker
 ln -s /bin/ip /usr/bin/ip
 if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
+mkdir -p /var/log/journal/
 systemctl daemon-reload
 systemctl enable docker && systemctl restart docker
+systemctl enable systemd-journald && systemctl restart systemd-journald
 {{ end -}}
 systemctl daemon-reload
 {{ range $_, $unit := .Units -}}
