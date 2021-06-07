@@ -2,10 +2,10 @@
 apiVersion: extensions.gardener.cloud/v1alpha1
 kind: OperatingSystemConfig
 metadata:
-  name: pool-02-original
+  name: pool-01-original
   namespace: default
 spec:
-  type: memoryone-chost
+  type: suse-chost # alternatively: suse-jeos
   units:
   - name: docker.service
     dropIns:
@@ -27,13 +27,13 @@ spec:
       EnvironmentFile=/etc/environment
       ExecStart=/opt/bin/health-monitor docker
   files:
-  - path: /var/lib/kubelet/ca.crt
+  - path: /var/lib/example/file.txt
     permissions: 0644
     encoding: b64
     content:
       secretRef:
-        name: default-token-4lxwb
-        dataKey: token
+        name: example-file
+        dataKey: file.txt
   - path: /etc/sysctl.d/99-k8s-general.conf
     permissions: 0644
     content:
@@ -42,8 +42,3 @@ spec:
           # A higher vm.max_map_count is great for elasticsearch, mongo, or other mmap users
           # See https://github.com/kubernetes/kops/issues/1340
           vm.max_map_count = 135217728
-  providerConfig:
-    apiVersion: memoryone-chost.os.extensions.gardener.cloud/v1alpha1
-    kind: OperatingSystemConfiguration
-    memoryTopology: "3"
-    systemMemory: "7x"

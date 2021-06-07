@@ -20,7 +20,7 @@ spec:
     ...
 ```
 
-Please find [a concrete example](example/20-operatingsystemconfig-chost.yaml) in the `example` folder.
+Please find [a concrete example](example/40-operatingsystemconfig-chost.yaml) in the `example` folder.
 
 It is also capable of supporting the [vSMP MemoryOne](https://www.scalemp.com/products/vsmp-memoryone/) operating system with the `memoryone-chost` type. Please find more information [here](docs/usage-as-end-user.md#support-for-vsmp-memoryone).
 
