@@ -10,6 +10,9 @@ write_files:
   encoding: b64
   content: |
     YmFy
+- path: '/foo2'
+  content: |
+    bar
 - path: '/etc/systemd/system/docker.service'
   encoding: b64
   content: |

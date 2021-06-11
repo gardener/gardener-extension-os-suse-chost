@@ -12,7 +12,9 @@ write_files:
 {{- if $file.Permissions }}
   permissions: '{{ $file.Permissions }}'
 {{- end }}
+{{- if not $file.TransmitUnencoded }}
   encoding: b64
+{{- end }}
   content: |
     {{ $file.Content }}
 {{ end -}}
