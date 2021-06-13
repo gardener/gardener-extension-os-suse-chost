@@ -19,12 +19,12 @@ import (
 
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator/testfiles/cloudinit"
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
 
 	oscommongenerator "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/generator"
 	"github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/generator/test"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
-	"github.com/gobuffalo/packr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -32,7 +32,6 @@ import (
 )
 
 var _ = Describe("Cloud-init Generator Test", func() {
-	var box = packr.NewBox("./testfiles/cloud-init")
 	os.Setenv(generator.BootCommand, "cloud-init-command")
 	os.Setenv(generator.OSConfigFormat, generator.OSConfigFormatCloudInit)
 	gen, err := generator.NewCloudInitGenerator()
@@ -41,7 +40,7 @@ var _ = Describe("Cloud-init Generator Test", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	Describe("Conformance Tests Cloud Init", test.DescribeTest(gen, box))
+	Describe("Conformance Tests Cloud Init", test.DescribeTest(gen, cloudinit.Files))
 
 	Context("memory one", func() {
 		var (

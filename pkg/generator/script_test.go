@@ -19,12 +19,12 @@ import (
 
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator/testfiles/script"
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
 
 	oscommongenerator "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/generator"
 	"github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/generator/test"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
-	"github.com/gobuffalo/packr"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -32,7 +32,6 @@ import (
 )
 
 var _ = Describe("Script Generator Test", func() {
-	var box = packr.NewBox("./testfiles/script")
 	os.Setenv(generator.BootCommand, "script-command")
 	os.Setenv(generator.OSConfigFormat, generator.OSConfigFormatScript)
 	gen, err := generator.NewCloudInitGenerator()
@@ -41,7 +40,7 @@ var _ = Describe("Script Generator Test", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	Describe("Conformance Tests Script", test.DescribeTest(gen, box))
+	Describe("Conformance Tests Script", test.DescribeTest(gen, script.Files))
 
 	Context("memory one", func() {
 		var (
@@ -92,9 +91,9 @@ var _ = Describe("Script Generator Test", func() {
 		)
 
 		BeforeEach(func() {
-			expectedCloudInitBootstrap, err = box.Find("cloud-init-memoryone-chost-bootstrap")
+			expectedCloudInitBootstrap, err = script.Files.ReadFile("script.memoryone-chost-bootstrap")
 			Expect(err).NotTo(HaveOccurred())
-			expectedCloudInitReconcile, err = box.Find("cloud-init-memoryone-chost-reconcile")
+			expectedCloudInitReconcile, err = script.Files.ReadFile("script.memoryone-chost-reconcile")
 			Expect(err).NotTo(HaveOccurred())
 		})
 
