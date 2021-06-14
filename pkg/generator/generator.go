@@ -15,6 +15,7 @@
 package generator
 
 import (
+	"embed"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -28,7 +29,6 @@ import (
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	oscommontemplate "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/template"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
-	"github.com/gobuffalo/packr/v2"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
@@ -50,7 +50,8 @@ const (
 	BootCommandBash = "/bin/bash %s"
 )
 
-//go:generate packr2
+//go:embed templates/*
+var templates embed.FS
 
 var decoder runtime.Decoder
 
@@ -64,8 +65,6 @@ func init() {
 
 // NewCloudInitGenerator creates a new Generator using the template file for suse-chost
 func NewCloudInitGenerator() (*oscommontemplate.CloudInitGenerator, error) {
-	box := packr.New("templates", "./templates")
-
 	configFormat, ok := os.LookupEnv(OSConfigFormat)
 	if !ok || configFormat == "" {
 		configFormat = OSConfigFormatScript
@@ -73,19 +72,19 @@ func NewCloudInitGenerator() (*oscommontemplate.CloudInitGenerator, error) {
 	if configFormat != OSConfigFormatScript && configFormat != OSConfigFormatCloudInit {
 		return nil, fmt.Errorf("unsupported value for %q", OSConfigFormat)
 	}
-	templateName := filepath.Join(strings.ToLower(configFormat), "suse-chost.template")
+	templateName := filepath.Join("templates", strings.ToLower(configFormat)+".suse-chost.template")
 
 	bootCmd, exists := os.LookupEnv(BootCommand)
 	if !exists || bootCmd == "" {
 		bootCmd = BootCommandBash
 	}
 
-	cloudInitTemplateString, err := box.FindString(templateName)
+	cloudInitTemplateString, err := templates.ReadFile(templateName)
 	if err != nil {
 		return nil, err
 	}
 
-	cloudInitTemplate, err := template.New("user-data").Parse(cloudInitTemplateString)
+	cloudInitTemplate, err := template.New("user-data").Parse(string(cloudInitTemplateString))
 	if err != nil {
 		return nil, err
 	}
