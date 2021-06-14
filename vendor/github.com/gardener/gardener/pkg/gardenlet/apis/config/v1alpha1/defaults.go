@@ -51,6 +51,9 @@ func SetDefaults_GardenletConfiguration(obj *GardenletConfiguration) {
 	if obj.Controllers.BackupEntry == nil {
 		obj.Controllers.BackupEntry = &BackupEntryControllerConfiguration{}
 	}
+	if obj.Controllers.Bastion == nil {
+		obj.Controllers.Bastion = &BastionControllerConfiguration{}
+	}
 	if obj.Controllers.ControllerInstallation == nil {
 		obj.Controllers.ControllerInstallation = &ControllerInstallationControllerConfiguration{}
 	}
@@ -154,6 +157,14 @@ func SetDefaults_BackupEntryControllerConfiguration(obj *BackupEntryControllerCo
 	if obj.DeletionGracePeriodHours == nil || *obj.DeletionGracePeriodHours < 0 {
 		v := DefaultBackupEntryDeletionGracePeriodHours
 		obj.DeletionGracePeriodHours = &v
+	}
+}
+
+// SetDefaults_BastionControllerConfiguration sets defaults for the backup bucket controller.
+func SetDefaults_BastionControllerConfiguration(obj *BastionControllerConfiguration) {
+	if obj.ConcurrentSyncs == nil {
+		v := DefaultControllerConcurrentSyncs
+		obj.ConcurrentSyncs = &v
 	}
 }
 
@@ -288,6 +299,16 @@ func SetDefaults_ManagedSeedControllerConfiguration(obj *ManagedSeedControllerCo
 	if obj.ConcurrentSyncs == nil {
 		v := DefaultControllerConcurrentSyncs
 		obj.ConcurrentSyncs = &v
+	}
+
+	if obj.SyncPeriod == nil {
+		v := metav1.Duration{Duration: 1 * time.Hour}
+		obj.SyncPeriod = &v
+	}
+
+	if obj.WaitSyncPeriod == nil {
+		v := metav1.Duration{Duration: 15 * time.Second}
+		obj.WaitSyncPeriod = &v
 	}
 
 	if obj.SyncJitterPeriod == nil {
