@@ -16,6 +16,11 @@ cat << EOF | base64 -d > '{{ .Path }}'
 {{ .Content }}
 EOF
 {{- end }}
+{{- define "put-content-unencoded" -}}
+cat << EOF > '{{ .Path }}'
+{{ .Content }}
+EOF
+{{- end }}
 
 {{ if .Bootstrap -}}
 # disable the default log rotation
@@ -30,7 +35,11 @@ EOF
 
 {{ range $_, $file := .Files -}}
 mkdir -p '{{ $file.Dirname }}'
+{{ if $file.TransmitUnencoded -}}
+{{ template "put-content-unencoded" $file }}
+{{- else -}}
 {{ template "put-content" $file }}
+{{- end }}
 {{- if $file.Permissions }}
 chmod '{{ $file.Permissions }}' '{{ $file.Path }}'
 {{ end }}

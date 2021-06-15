@@ -14,6 +14,10 @@ YmFy
 EOF
 chmod '0600' '/foo'
 
+mkdir -p '/'
+cat << EOF > '/foo2'
+bar
+EOF
 cat << EOF | base64 -d > '/etc/systemd/system/docker.service'
 dW5pdA==
 EOF
