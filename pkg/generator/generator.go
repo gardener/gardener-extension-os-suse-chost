@@ -17,10 +17,7 @@ package generator
 import (
 	"embed"
 	"fmt"
-	"os"
 	"path/filepath"
-	"strings"
-	"text/template"
 
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
 	memoryonechostinstall "github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost/install"
@@ -28,32 +25,21 @@ import (
 
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	oscommontemplate "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/template"
+	ostemplate "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/template"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	runtimeutils "k8s.io/apimachinery/pkg/util/runtime"
 )
 
-const (
-	// OSConfigFormat format of the OSC to be generated. Must match the name of a subdirectory under
-	// the 'templates' directory. Presently 'script' and 'cloud-init' are supported
-	OSConfigFormat = "OS_CONFIG_FORMAT"
-	// OSConfigFormatScript is a constant for the 'script' config format.
-	OSConfigFormatScript = "script"
-	// OSConfigFormatCloudInit is a constant for the 'cloud-init' config format.
-	OSConfigFormatCloudInit = "cloud-init"
-
-	// BootCommand command to be executed to bootstap the OS Configuration.
-	// Depends on the OSC format and the infrastructure platform.
-	// Well known valid values are `"/bin/bash %s"` and `"/usr/bin/cloud-init clean && /usr/bin/cloud-init --file %s init"`.
-	BootCommand = "BOOT_COMMAND"
-	// BootCommandBash is a constant for the /bin/bash boot command.
-	BootCommandBash = "/bin/bash %s"
+var (
+	bootCmd            = "/bin/bash %s"
+	cloudInitGenerator *ostemplate.CloudInitGenerator
+	decoder            runtime.Decoder
 )
 
 //go:embed templates/*
 var templates embed.FS
-
-var decoder runtime.Decoder
 
 func init() {
 	scheme := runtime.NewScheme()
@@ -61,41 +47,16 @@ func init() {
 		controllercmd.LogErrAndExit(err, "Could not update scheme")
 	}
 	decoder = serializer.NewCodecFactory(scheme).UniversalDecoder()
-}
 
-// NewCloudInitGenerator creates a new Generator using the template file for suse-chost
-func NewCloudInitGenerator() (*oscommontemplate.CloudInitGenerator, error) {
-	configFormat, ok := os.LookupEnv(OSConfigFormat)
-	if !ok || configFormat == "" {
-		configFormat = OSConfigFormatScript
-	}
-	if configFormat != OSConfigFormatScript && configFormat != OSConfigFormatCloudInit {
-		return nil, fmt.Errorf("unsupported value for %q", OSConfigFormat)
-	}
-	templateName := filepath.Join("templates", strings.ToLower(configFormat)+".suse-chost.template")
+	scriptTemplateString, err := templates.ReadFile(filepath.Join("templates", "script.suse-chost.template"))
+	runtimeutils.Must(err)
 
-	bootCmd, exists := os.LookupEnv(BootCommand)
-	if !exists || bootCmd == "" {
-		bootCmd = BootCommandBash
-	}
+	cloudInitTemplate, err := ostemplate.NewTemplate("script").Parse(string(scriptTemplateString))
+	runtimeutils.Must(err)
 
-	cloudInitTemplateString, err := templates.ReadFile(templateName)
-	if err != nil {
-		return nil, err
-	}
-
-	cloudInitTemplate, err := template.New("user-data").Parse(string(cloudInitTemplateString))
-	if err != nil {
-		return nil, err
-	}
-
-	return oscommontemplate.NewCloudInitGenerator(cloudInitTemplate, oscommontemplate.DefaultUnitsPath, bootCmd, func(osc *extensionsv1alpha1.OperatingSystemConfig) (map[string]interface{}, error) {
+	cloudInitGenerator = oscommontemplate.NewCloudInitGenerator(cloudInitTemplate, oscommontemplate.DefaultUnitsPath, bootCmd, func(osc *extensionsv1alpha1.OperatingSystemConfig) (map[string]interface{}, error) {
 		if osc.Spec.Type != susechost.OSTypeMemoryOneCHost {
 			return nil, nil
-		}
-
-		if configFormat != OSConfigFormatScript {
-			return nil, fmt.Errorf("cannot render %q user-data for %q format - only %q is supported", susechost.OSTypeMemoryOneCHost, configFormat, OSConfigFormatScript)
 		}
 
 		values := map[string]interface{}{
@@ -120,5 +81,10 @@ func NewCloudInitGenerator() (*oscommontemplate.CloudInitGenerator, error) {
 		}
 
 		return values, nil
-	}), nil
+	})
+}
+
+// NewCloudInitGenerator creates a new Generator using the template file for suse-chost
+func NewCloudInitGenerator() (*oscommontemplate.CloudInitGenerator, error) {
+	return cloudInitGenerator, nil
 }
