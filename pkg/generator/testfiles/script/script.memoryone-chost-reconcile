@@ -22,7 +22,4 @@ then
   grep -q '^MTU' /etc/sysconfig/network/ifcfg-eth0 && sed -i 's/^MTU.*/MTU=1460/' /etc/sysconfig/network/ifcfg-eth0 || echo 'MTU=1460' >> /etc/sysconfig/network/ifcfg-eth0
   wicked ifreload eth0
 fi
-systemctl daemon-reload
-
-systemctl enable 'docker.service' && systemctl restart 'docker.service'
 
