@@ -33,6 +33,27 @@ cat <<EOF > /etc/docker/daemon.json
 EOF
 {{ end -}}
 
+{{ if and (isContainerDEnabled .CRI) .Bootstrap }}
+CONTAINERD_CONFIG_PATH=/etc/containerd/config.toml
+if [[ ! -s "${CONTAINERD_CONFIG_PATH}" || $(cat ${CONTAINERD_CONFIG_PATH}) == "# See containerd-config.toml(5) for documentation." ]]; then
+  mkdir -p /etc/containerd
+  containerd config default > "${CONTAINERD_CONFIG_PATH}"
+  chmod 0644 "${CONTAINERD_CONFIG_PATH}"
+fi
+
+if systemctl show containerd -p Conflicts | grep -q docker; then
+  sed -re 's/Conflicts=(.*)(docker.service|docker)(.*)/Conflicts=\1 \3/g' -i /usr/lib/systemd/system/containerd.service
+fi
+
+mkdir -p /etc/systemd/system/containerd.service.d
+cat <<EOF > /etc/systemd/system/containerd.service.d/11-exec_config.conf
+[Service]
+ExecStart=
+ExecStart=/usr/sbin/containerd --config=${CONTAINERD_CONFIG_PATH}
+EOF
+chmod 0644 /etc/systemd/system/containerd.service.d/11-exec_config.conf
+{{- end }}
+
 {{ range $_, $file := .Files -}}
 mkdir -p '{{ $file.Dirname }}'
 {{ if $file.TransmitUnencoded -}}
@@ -84,6 +105,10 @@ ln -s /usr/bin/docker /bin/docker
 ln -s /bin/ip /usr/bin/ip
 if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
 systemctl daemon-reload
+{{- if isContainerDEnabled .CRI }}
+ln -s /usr/sbin/containerd-ctr /usr/sbin/ctr
+systemctl enable containerd && systemctl restart containerd
+{{- end }}
 systemctl enable docker && systemctl restart docker
 systemctl enable cloud-config-downloader && systemctl restart cloud-config-downloader
 {{ end -}}
