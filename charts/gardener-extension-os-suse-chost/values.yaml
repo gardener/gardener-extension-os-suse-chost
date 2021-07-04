@@ -22,5 +22,8 @@ controllers:
   concurrentSyncs: 5
   ignoreOperationAnnotation: false
 
+leaderElection:
+  resourceLock: leases
+
 disableControllers: []
 
