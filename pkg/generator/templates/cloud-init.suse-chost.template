@@ -43,10 +43,5 @@ runcmd:
 - if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
 - systemctl daemon-reload
 - systemctl enable docker && systemctl restart docker
-{{ end -}}
-- systemctl daemon-reload
-{{ range $_, $unit := .Units -}}
-{{- if or (ne $unit.Name "cloud-config-downloader.service") ($.Bootstrap) }}
-- systemctl enable '{{ $unit.Name }}' && systemctl restart '{{ $unit.Name }}'
-{{ end -}}
+- systemctl enable cloud-config-downloader && systemctl restart cloud-config-downloader
 {{ end -}}

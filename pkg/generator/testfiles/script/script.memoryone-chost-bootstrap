@@ -44,10 +44,6 @@ ln -s /bin/ip /usr/bin/ip
 if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
 systemctl daemon-reload
 systemctl enable docker && systemctl restart docker
-systemctl daemon-reload
-
-systemctl enable 'docker.service' && systemctl restart 'docker.service'
-
-systemctl enable 'cloud-config-downloader.service' && systemctl restart 'cloud-config-downloader.service'
+systemctl enable cloud-config-downloader && systemctl restart cloud-config-downloader
 
 --==BOUNDARY==
