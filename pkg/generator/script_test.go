@@ -15,8 +15,6 @@
 package generator_test
 
 import (
-	"os"
-
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator"
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator/testfiles/script"
@@ -32,8 +30,6 @@ import (
 )
 
 var _ = Describe("Script Generator Test", func() {
-	os.Setenv(generator.BootCommand, "script-command")
-	os.Setenv(generator.OSConfigFormat, generator.OSConfigFormatScript)
 	gen, err := generator.NewCloudInitGenerator()
 
 	It("should not fail creating generator", func() {
