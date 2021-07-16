@@ -38,6 +38,19 @@ then
   grep -q '^MTU' /etc/sysconfig/network/ifcfg-eth0 && sed -i 's/^MTU.*/MTU=1460/' /etc/sysconfig/network/ifcfg-eth0 || echo 'MTU=1460' >> /etc/sysconfig/network/ifcfg-eth0
   wicked ifreload eth0
 fi
+
+# mitigate https://github.com/systemd/systemd/issues/7082
+# ref https://github.com/coreos/bugs/issues/2193#issuecomment-337767555
+SYSTEMD_VERSION=$(rpm -q --qf %{VERSION} systemd | grep -Po '^[1-9]\d*')
+if [[ $SYSMTED_VERSION -lt 236 ]]; then
+  mkdir -p /etc/systemd/system/systemd-hostnamed.service.d/
+  cat <<EOF > /etc/systemd/system/systemd-hostnamed.service.d/10-protect-system.conf
+[Service]
+ProtectSystem=full
+EOF
+  systemctl daemon-reload
+fi
+
 until zypper -q install -y docker wget socat jq nfs-client; [ $? -ne 7 ]; do sleep 1; done
 ln -s /usr/bin/docker /bin/docker
 ln -s /bin/ip /usr/bin/ip
