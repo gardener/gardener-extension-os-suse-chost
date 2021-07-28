@@ -37,7 +37,10 @@ fi
 # mitigate https://github.com/systemd/systemd/issues/7082
 # ref https://github.com/coreos/bugs/issues/2193#issuecomment-337767555
 SYSTEMD_VERSION=$(rpm -q --qf %{VERSION} systemd | grep -Po '^[1-9]\d*')
-if [[ $SYSMTED_VERSION -lt 236 ]]; then
+SUSE_VARIANT_VERSION=$(grep -oP '(?<=^VARIANT_VERSION=).+' /etc/os-release | tr -d '"')
+SUSE_SP_ID=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"' | cut -d '.' -f 2)
+
+if [[ $SYSMTED_VERSION -lt 236 && -n $SUSE_SP_ID && $SUSE_SP_ID -lt 3 && -n $SUSE_VARIANT_VERSION && $SUSE_VARIANT_VERSION -lt 20210722 ]]; then
   mkdir -p /etc/systemd/system/systemd-hostnamed.service.d/
   cat <<EOF > /etc/systemd/system/systemd-hostnamed.service.d/10-protect-system.conf
 [Service]
