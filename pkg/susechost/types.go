@@ -20,9 +20,6 @@ const (
 
 	// OSTypeSuSECHost is a constant for the suse-chost extension OS type.
 	OSTypeSuSECHost = "suse-chost"
-	// OSTypeSuSEJeOS is a constant for the suse-jeos extension OS type.
-	// Deprecated: Use `OSTypeSuSECHost` instead.
-	OSTypeSuSEJeOS = "suse-jeos"
 	// OSTypeMemoryOneCHost is a constant for the memoryone-chost extension OS type.
 	OSTypeMemoryOneCHost = "memoryone-chost"
 )

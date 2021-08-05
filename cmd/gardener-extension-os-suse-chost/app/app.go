@@ -42,7 +42,6 @@ func NewControllerCommand(ctx context.Context) *cobra.Command {
 	}
 
 	osTypes := []string{
-		susechost.OSTypeSuSEJeOS,
 		susechost.OSTypeSuSECHost,
 		susechost.OSTypeMemoryOneCHost,
 	}

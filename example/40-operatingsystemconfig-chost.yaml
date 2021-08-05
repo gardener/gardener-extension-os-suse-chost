@@ -5,7 +5,7 @@ metadata:
   name: pool-01-original
   namespace: default
 spec:
-  type: suse-chost # alternatively: suse-jeos
+  type: suse-chost
   units:
   - name: docker.service
     dropIns:
