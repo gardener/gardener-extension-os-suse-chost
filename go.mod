@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.0
-	github.com/gardener/gardener v1.32.0
+	github.com/gardener/gardener v1.33.1
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.16.0
 	github.com/spf13/cobra v1.2.1
