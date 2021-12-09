@@ -8,6 +8,8 @@ cat <<EOF > /etc/docker/daemon.json
   "log-driver": "json-file"
 }
 EOF
+
+
 mkdir -p '/'
 cat << EOF | base64 -d > '/foo'
 YmFy

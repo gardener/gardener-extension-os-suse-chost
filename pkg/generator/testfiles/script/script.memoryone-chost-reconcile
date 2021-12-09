@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+
 mkdir -p '/'
 cat << EOF | base64 -d > '/foo'
 YmFy
