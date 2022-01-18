@@ -45,7 +45,7 @@ The secret has one data key `cloud_config` that stores the generation.
 
 An example for a `ControllerRegistration` resource that can be used to register this controller to Gardener can be found [here](example/controller-registration.yaml).
 
-This controller is implemented using the [`oscommon`](https://github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/README.md) library for operating system configuration controllers.
+This controller is implemented using the [`oscommon`](https://github.com/gardener/gardener/blob/master/extensions/pkg/controller/operatingsystemconfig/oscommon/README.md) library for operating system configuration controllers.
 
 Please find more information regarding the extensibility concepts and a detailed proposal [here](https://github.com/gardener/gardener/blob/master/docs/proposals/01-extensibility.md).
 
