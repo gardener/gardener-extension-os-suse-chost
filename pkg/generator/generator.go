@@ -23,7 +23,6 @@ import (
 	memoryonechostinstall "github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost/install"
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
 
-	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	oscommontemplate "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/template"
 	ostemplate "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/template"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
@@ -43,9 +42,7 @@ var templates embed.FS
 
 func init() {
 	scheme := runtime.NewScheme()
-	if err := memoryonechostinstall.AddToScheme(scheme); err != nil {
-		controllercmd.LogErrAndExit(err, "Could not update scheme")
-	}
+	runtimeutils.Must(memoryonechostinstall.AddToScheme(scheme))
 	decoder = serializer.NewCodecFactory(scheme).UniversalDecoder()
 
 	scriptTemplateString, err := templates.ReadFile(filepath.Join("templates", "script.suse-chost.template"))
