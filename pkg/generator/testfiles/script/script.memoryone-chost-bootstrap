@@ -17,6 +17,11 @@ cat <<EOF > /etc/docker/daemon.json
 }
 EOF
 
+if ! grep -q "Storage=persistent" /etc/systemd/journald.conf; then
+  sed -i '/\[Journal\]/ a Storage=persistent' /etc/systemd/journald.conf
+  systemctl restart systemd-journald
+fi
+
 
 mkdir -p '/'
 cat << EOF | base64 -d > '/foo'

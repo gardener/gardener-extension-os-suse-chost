@@ -31,6 +31,11 @@ cat <<EOF > /etc/docker/daemon.json
   "log-driver": "json-file"
 }
 EOF
+
+if ! grep -q "Storage=persistent" /etc/systemd/journald.conf; then
+  sed -i '/\[Journal\]/ a Storage=persistent' /etc/systemd/journald.conf
+  systemctl restart systemd-journald
+fi
 {{ end -}}
 
 {{ if and (isContainerDEnabled .CRI) .Bootstrap }}
