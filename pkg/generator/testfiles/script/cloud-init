@@ -9,11 +9,6 @@ cat <<EOF > /etc/docker/daemon.json
 }
 EOF
 
-if ! grep -q "Storage=persistent" /etc/systemd/journald.conf; then
-  sed -i '/\[Journal\]/ a Storage=persistent' /etc/systemd/journald.conf
-  systemctl restart systemd-journald
-fi
-
 
 mkdir -p '/'
 cat << EOF | base64 -d > '/foo'
@@ -63,4 +58,12 @@ if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
 systemctl daemon-reload
 systemctl enable docker && systemctl restart docker
 systemctl enable cloud-config-downloader && systemctl restart cloud-config-downloader
-
+#Set journald storage to persistent
+if ! grep -q "Storage=persistent" /etc/systemd/journald.conf; then
+  if ! grep -q "Storage=" /etc/systemd/journald.conf; then
+    sed -i '/\[Journal\]/ a Storage=persistent' /etc/systemd/journald.conf
+  else
+    sed -i 's/Storage=.*/Storage=persistent/' /etc/systemd/journald.conf
+  fi
+  systemctl restart systemd-journald
+fi
