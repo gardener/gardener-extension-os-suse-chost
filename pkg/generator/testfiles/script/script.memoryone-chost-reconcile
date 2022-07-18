@@ -41,8 +41,8 @@ EOF
 fi
 
 #Set journald storage to persistent
-if ! grep -q "Storage=persistent" /etc/systemd/journald.conf; then
-  if ! grep -q "Storage=" /etc/systemd/journald.conf; then
+if ! grep -q "^Storage=persistent" /etc/systemd/journald.conf; then
+  if ! grep -q "^Storage=" /etc/systemd/journald.conf; then
     sed -i '/\[Journal\]/ a Storage=persistent' /etc/systemd/journald.conf
   else
     sed -i 's/Storage=.*/Storage=persistent/' /etc/systemd/journald.conf
