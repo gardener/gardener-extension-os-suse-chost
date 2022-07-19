@@ -64,12 +64,12 @@ systemctl daemon-reload
 systemctl enable docker && systemctl restart docker
 systemctl enable cloud-config-downloader && systemctl restart cloud-config-downloader
 #Set journald storage to persistent
-if ! grep -q "^Storage=persistent" /etc/systemd/journald.conf; then
-  if ! grep -q "^Storage=" /etc/systemd/journald.conf; then
-    sed -i '/\[Journal\]/ a Storage=persistent' /etc/systemd/journald.conf
-  else
-    sed -i 's/Storage=.*/Storage=persistent/' /etc/systemd/journald.conf
-  fi
+if [[ ! -f /etc/systemd/journald.conf.d ]]; then
+  mkdir -p /etc/systemd/journald.conf.d
+  cat <<EOF > /etc/systemd/journald.conf.d/10-journald-config.conf
+[Journal]
+Storage=persistent
+EOF
   systemctl restart systemd-journald
 fi
 --==BOUNDARY==
