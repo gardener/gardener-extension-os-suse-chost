@@ -40,12 +40,4 @@ EOF
   systemctl daemon-reload
 fi
 
-#Set journald storage to persistent
-if [[ ! -f /etc/systemd/journald.conf.d ]]; then
-  mkdir -p /etc/systemd/journald.conf.d
-  cat <<EOF > /etc/systemd/journald.conf.d/10-journald-config.conf
-[Journal]
-Storage=persistent
-EOF
-  systemctl restart systemd-journald
-fi
+
