@@ -58,4 +58,13 @@ if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
 systemctl daemon-reload
 systemctl enable docker && systemctl restart docker
 systemctl enable cloud-config-downloader && systemctl restart cloud-config-downloader
+#Set journald storage to persistent such that logs are written to /var/log instead of /run/log
+if [[ ! -f /etc/systemd/journald.conf.d/10-use-persistent-log-storage.conf ]]; then
+  mkdir -p /etc/systemd/journald.conf.d
+  cat <<EOF > /etc/systemd/journald.conf.d/10-use-persistent-log-storage.conf
+[Journal]
+Storage=persistent
+EOF
+  systemctl restart systemd-journald
+fi
 
