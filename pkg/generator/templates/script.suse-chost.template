@@ -113,10 +113,10 @@ systemctl enable docker && systemctl restart docker
 systemctl enable cloud-config-downloader && systemctl restart cloud-config-downloader
 {{ end -}}
 {{ if .Bootstrap -}}
-#Set journald storage to persistent
-if [[ ! -f /etc/systemd/journald.conf.d ]]; then
+#Set journald storage to persistent such that logs are written to /var/log instead of /run/log
+if [[ ! -f /etc/systemd/journald.conf.d/10-use-persistent-log-storage.conf ]]; then
   mkdir -p /etc/systemd/journald.conf.d
-  cat <<EOF > /etc/systemd/journald.conf.d/10-journald-config.conf
+  cat <<EOF > /etc/systemd/journald.conf.d/10-use-persistent-log-storage.conf
 [Journal]
 Storage=persistent
 EOF
