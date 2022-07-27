@@ -3,7 +3,7 @@ FROM golang:1.17.9 AS builder
 
 WORKDIR /go/src/github.com/gardener/gardener-extension-os-suse-chost
 COPY . .
-RUN make install-requirements && make generate && make install
+RUN make generate && make install
 
 ############# gardener-extension-os-suse-chost
 FROM gcr.io/distroless/static-debian11:nonroot AS gardener-extension-os-suse-chost
