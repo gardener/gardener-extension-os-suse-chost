@@ -13,6 +13,11 @@ gardener-extension-os-suse-chost:
             image: 'eu.gcr.io/gardener-project/gardener/extensions/os-suse-chost'
             dockerfile: 'Dockerfile'
             target: gardener-extension-os-suse-chost
+            resource_labels:
+            - name: 'cloud.gardener.cnudie/responsibles'
+              value:
+              - type: 'githubUser'
+                username: 'MrBatschner'
   jobs:
     head-update:
       traits:
