@@ -17,5 +17,6 @@ package script
 import "embed"
 
 // Files contains the contents of the script testfiles directory
+//
 //go:embed cloud-init script*
 var Files embed.FS

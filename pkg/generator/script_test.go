@@ -19,6 +19,7 @@ import (
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator"
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator/testfiles/script"
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
+	"github.com/go-logr/logr"
 
 	oscommongenerator "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/generator"
 	"github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/generator/test"
@@ -28,6 +29,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/pointer"
 )
+
+var logger = logr.Discard()
 
 var _ = Describe("Script Generator Test", func() {
 	gen, err := generator.NewCloudInitGenerator()
@@ -94,7 +97,7 @@ var _ = Describe("Script Generator Test", func() {
 		})
 
 		It("should render correctly bootstrap", func() {
-			cloudInit, _, err := gen.Generate(osConfig)
+			cloudInit, _, err := gen.Generate(logger, osConfig)
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(cloudInit).To(Equal(expectedCloudInitBootstrap))
@@ -102,7 +105,7 @@ var _ = Describe("Script Generator Test", func() {
 
 		It("should render correctly reconcile", func() {
 			osConfig.Bootstrap = false
-			cloudInit, _, err := gen.Generate(osConfig)
+			cloudInit, _, err := gen.Generate(logger, osConfig)
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(cloudInit).To(Equal(expectedCloudInitReconcile))
