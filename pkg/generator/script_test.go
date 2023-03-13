@@ -51,8 +51,8 @@ var _ = Describe("Script Generator Test", func() {
 							Type: susechost.OSTypeMemoryOneCHost,
 							ProviderConfig: &runtime.RawExtension{
 								Raw: encode(&memoryonechost.OperatingSystemConfiguration{
-									MemoryTopology: pointer.StringPtr("3"),
-									SystemMemory:   pointer.StringPtr("7x"),
+									MemoryTopology: pointer.String("3"),
+									SystemMemory:   pointer.String("7x"),
 								}),
 							},
 						},
