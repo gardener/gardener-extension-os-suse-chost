@@ -22,7 +22,7 @@ spec:
 
 Please find [a concrete example](example/40-operatingsystemconfig-chost.yaml) in the `example` folder.
 
-It is also capable of supporting the [vSMP MemoryOne](https://www.scalemp.com/products/vsmp-memoryone/) operating system with the `memoryone-chost` type. Please find more information [here](docs/usage-as-end-user.md#support-for-vsmp-memoryone).
+It is also capable of supporting the [vSMP MemoryOne](https://marketplace.cloud.vmware.com/services/details/vsmp-memoryone?slug=true) operating system with the `memoryone-chost` type. Please find more information [here](docs/usage-as-end-user.md#support-for-vsmp-memoryone).
 
 After reconciliation the resulting data will be stored in a secret within the same namespace (as the config itself might contain confidential data). The name of the secret will be written into the resource's `.status` field:
 

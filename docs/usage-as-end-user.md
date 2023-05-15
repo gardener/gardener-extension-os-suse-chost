@@ -20,7 +20,7 @@ If the second option applies to your use-case please make sure that your VPC has
 
 ## Support for vSMP MemoryOne
 
-This extension controller is also capable of generating user-data for the [vSMP MemoryOne](https://www.scalemp.com/products/vsmp-memoryone/) operating system in conjunction with SuSE CHost.
+This extension controller is also capable of generating user-data for the [vSMP MemoryOne](https://marketplace.cloud.vmware.com/services/details/vsmp-memoryone?slug=true) operating system in conjunction with SuSE CHost.
 It reacts on the `memoryone-chost` extension type.
 Additionally, it allows certain customizations with the following configuration:
 
