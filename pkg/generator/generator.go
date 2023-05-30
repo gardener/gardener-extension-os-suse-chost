@@ -19,16 +19,16 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
-	memoryonechostinstall "github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost/install"
-	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
-
 	oscommontemplate "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/template"
 	ostemplate "github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig/oscommon/template"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	runtimeutils "k8s.io/apimachinery/pkg/util/runtime"
+
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
+	memoryonechostinstall "github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost/install"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
 )
 
 var (
