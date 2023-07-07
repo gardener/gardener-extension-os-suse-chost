@@ -9,7 +9,7 @@ In this document we describe how this configuration looks like and under which c
 Gardener allows you to create SuSE CHost based worker nodes by:
 
 1. Using a Gardener managed VPC
-2. Reusing a VPC that already exists (VPC `id` specified in [InfrastructureConfig](https://github.com/gardener/gardener-extension-provider-aws/blob/master/docs/usage-as-end-user.md#infrastructureconfig)]
+2. Reusing a VPC that already exists (VPC `id` specified in [InfrastructureConfig](https://github.com/gardener/gardener-extension-provider-aws/blob/master/docs/usage/usage.md#infrastructureconfig)]
 
 If the second option applies to your use-case please make sure that your VPC has enabled **DNS Support**. Otherwise SuSE CHost based nodes aren't able to join or operate in your cluster properly.
 
@@ -89,7 +89,7 @@ It runs in the region that is selected in your `$HOME/.aws/config` file.
 Consequently, if you want to generate the snapshot in multiple regions, you have to run in multiple times after configuring the respective region using `aws configure`.
 
 ```bash
-ami="ami-1234" #Replace the ami with the intended one. 
+ami="ami-1234" #Replace the ami with the intended one.
 name=`aws ec2 describe-images --image-ids $ami  --query="Images[].Name" --output=text`
 cur=`aws ec2 describe-snapshots --filter="Name=description,Values=snap-$name" --query="Snapshots[].Description" --output=text`
 if [ -n "$cur" ]; then
@@ -98,7 +98,7 @@ if [ -n "$cur" ]; then
 fi
 echo "AMI $name ... creating private snapshot"
 inst=`aws ec2 run-instances --instance-type t3.nano --image-id $ami --query 'Instances[0].InstanceId' --output=text --subnet-id subnet-1234 --tag-specifications 'ResourceType=instance,Tags=[{Key=scalemp-test,Value=scalemp-test}]'` #Replace the subnet-id with the intended one.
-aws ec2 wait instance-running --instance-ids $inst 
+aws ec2 wait instance-running --instance-ids $inst
 vol=`aws ec2 describe-instances --instance-ids $inst --query "Reservations[].Instances[].BlockDeviceMappings[0].Ebs.VolumeId" --output=text`
 snap=`aws ec2 create-snapshot --description "snap-$name" --volume-id $vol --query='SnapshotId' --tag-specifications "ResourceType=snapshot,Tags=[{Key=Name,Value=\"$name\"}]" --output=text`
 aws ec2 wait snapshot-completed --snapshot-ids $snap
