@@ -28,7 +28,7 @@ import (
 
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
 	memoryonechostinstall "github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost/install"
-	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/memoryone"
 )
 
 var (
@@ -52,7 +52,7 @@ func init() {
 	runtimeutils.Must(err)
 
 	cloudInitGenerator = oscommontemplate.NewCloudInitGenerator(cloudInitTemplate, oscommontemplate.DefaultUnitsPath, bootCmd, func(osc *extensionsv1alpha1.OperatingSystemConfig) (map[string]interface{}, error) {
-		if osc.Spec.Type != susechost.OSTypeMemoryOneCHost {
+		if osc.Spec.Type != memoryone.OSTypeMemoryOneCHost {
 			return nil, nil
 		}
 

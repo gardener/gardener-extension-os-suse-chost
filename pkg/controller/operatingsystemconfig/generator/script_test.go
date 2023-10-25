@@ -25,9 +25,9 @@ import (
 	"k8s.io/utils/pointer"
 
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
-	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator"
-	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator/testfiles/script"
-	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/controller/operatingsystemconfig/generator"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/controller/operatingsystemconfig/generator/testfiles/script"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/memoryone"
 )
 
 var logger = logr.Discard()
@@ -48,7 +48,7 @@ var _ = Describe("Script Generator Test", func() {
 				Object: &extensionsv1alpha1.OperatingSystemConfig{
 					Spec: extensionsv1alpha1.OperatingSystemConfigSpec{
 						DefaultSpec: extensionsv1alpha1.DefaultSpec{
-							Type: susechost.OSTypeMemoryOneCHost,
+							Type: memoryone.OSTypeMemoryOneCHost,
 							ProviderConfig: &runtime.RawExtension{
 								Raw: encode(&memoryonechost.OperatingSystemConfiguration{
 									MemoryTopology: pointer.String("3"),

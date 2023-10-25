@@ -14,7 +14,9 @@
 
 package script
 
-import "embed"
+import (
+	"embed"
+)
 
 // Files contains the contents of the script testfiles directory
 //

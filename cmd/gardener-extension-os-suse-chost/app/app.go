@@ -33,7 +33,8 @@ import (
 	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"github.com/gardener/gardener-extension-os-suse-chost/pkg/generator"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/controller/operatingsystemconfig/generator"
+	"github.com/gardener/gardener-extension-os-suse-chost/pkg/memoryone"
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
 )
 
@@ -47,7 +48,7 @@ func NewControllerCommand(ctx context.Context) *cobra.Command {
 
 	osTypes := []string{
 		susechost.OSTypeSuSECHost,
-		susechost.OSTypeMemoryOneCHost,
+		memoryone.OSTypeMemoryOneCHost,
 	}
 
 	var (
