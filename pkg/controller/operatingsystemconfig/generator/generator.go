@@ -82,6 +82,6 @@ func init() {
 }
 
 // NewCloudInitGenerator creates a new Generator using the template file for suse-chost
-func NewCloudInitGenerator() (*oscommontemplate.CloudInitGenerator, error) {
-	return cloudInitGenerator, nil
+func NewCloudInitGenerator() *oscommontemplate.CloudInitGenerator {
+	return cloudInitGenerator
 }

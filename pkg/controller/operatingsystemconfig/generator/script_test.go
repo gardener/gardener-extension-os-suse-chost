@@ -33,11 +33,7 @@ import (
 var logger = logr.Discard()
 
 var _ = Describe("Script Generator Test", func() {
-	gen, err := generator.NewCloudInitGenerator()
-
-	It("should not fail creating generator", func() {
-		Expect(err).NotTo(HaveOccurred())
-	})
+	gen := generator.NewCloudInitGenerator()
 
 	Describe("Conformance Tests Script", test.DescribeTest(gen, script.Files))
 
