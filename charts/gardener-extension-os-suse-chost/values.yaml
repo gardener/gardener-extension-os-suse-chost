@@ -19,13 +19,12 @@ controllers:
   heartbeat: 
     renewIntervalSeconds: 30 
 
-leaderElection:
-  resourceLock: leases
-
 disableControllers: []
 
 gardener:
   version: ""
+  gardenlet:
+    featureGates: {}
 
 # settings for metrics, e.g. scraping by seed-prometheus
 metrics:
