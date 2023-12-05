@@ -4,7 +4,7 @@ gardener-extension-os-suse-chost:
       version:
         preprocess: 'inject-commit-hash'
       publish:
-        oci-builder: 'kaniko'
+        oci-builder: 'docker-buildx'
         dockerimages:
           gardener-extension-os-suse-chost:
             image: 'eu.gcr.io/gardener-project/gardener/extensions/os-suse-chost'
@@ -44,7 +44,6 @@ gardener-extension-os-suse-chost:
               slack_cfg_name: 'scp_workspace'
         component_descriptor: ~
         publish:
-          oci-builder: 'kaniko'
           dockerimages:
             gardener-extension-os-suse-chost:
               tag_as_latest: true
