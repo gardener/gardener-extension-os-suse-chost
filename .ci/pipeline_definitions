@@ -1,7 +1,5 @@
 gardener-extension-os-suse-chost:
-  template: 'default'
   base_definition:
-    repo: ~
     traits:
       version:
         preprocess: 'inject-commit-hash'
@@ -9,7 +7,6 @@ gardener-extension-os-suse-chost:
         oci-builder: 'kaniko'
         dockerimages:
           gardener-extension-os-suse-chost:
-            registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/extensions/os-suse-chost'
             dockerfile: 'Dockerfile'
             target: gardener-extension-os-suse-chost
