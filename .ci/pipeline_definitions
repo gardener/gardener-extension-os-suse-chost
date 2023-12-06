@@ -1,16 +1,15 @@
 gardener-extension-os-suse-chost:
-  template: 'default'
   base_definition:
-    repo: ~
     traits:
+      component_descriptor:
+        ocm_repository: europe-docker.pkg.dev/gardener-project/snapshots
       version:
         preprocess: 'inject-commit-hash'
       publish:
-        oci-builder: 'kaniko'
+        oci-builder: 'docker-buildx'
         dockerimages:
           gardener-extension-os-suse-chost:
-            registry: 'gcr-readwrite'
-            image: 'eu.gcr.io/gardener-project/gardener/extensions/os-suse-chost'
+            image: europe-docker.pkg.dev/gardener-project/snapshots/gardener/extensions/os-suse-chost
             dockerfile: 'Dockerfile'
             target: gardener-extension-os-suse-chost
             resource_labels:
@@ -21,14 +20,15 @@ gardener-extension-os-suse-chost:
   jobs:
     head-update:
       traits:
-        component_descriptor: ~
+        component_descriptor:
+          ocm_repository_mappings:
+            - repository: europe-docker.pkg.dev/gardener-project/releases
         draft_release: ~
         options:
           public_build_logs: true
     pull-request:
       traits:
         pull-request: ~
-        component_descriptor: ~
         options:
           public_build_logs: true
     release:
@@ -45,9 +45,10 @@ gardener-extension-os-suse-chost:
             internal_scp_workspace:
               channel_name: 'C9CEBQPGE' #sap-tech-gardener
               slack_cfg_name: 'scp_workspace'
-        component_descriptor: ~
+        component_descriptor:
+          ocm_repository: europe-docker.pkg.dev/gardener-project/releases
         publish:
-          oci-builder: 'kaniko'
           dockerimages:
             gardener-extension-os-suse-chost:
               tag_as_latest: true
+              image: europe-docker.pkg.dev/gardener-project/releases/gardener/extensions/os-suse-chost
