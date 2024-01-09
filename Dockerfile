@@ -1,5 +1,5 @@
 ############# builder
-FROM golang:1.21.5 AS builder
+FROM golang:1.22rc1 AS builder
 
 WORKDIR /go/src/github.com/gardener/gardener-extension-os-suse-chost
 COPY . .
