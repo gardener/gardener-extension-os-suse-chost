@@ -149,9 +149,8 @@ systemctl daemon-reload
 ln -s /usr/sbin/containerd-ctr /usr/sbin/ctr
 systemctl enable containerd && systemctl restart containerd
 systemctl enable docker && systemctl restart docker
-systemctl enable gardener-node-init && systemctl restart gardener-node-init
 
-#Set journald storage to persistent such that logs are written to /var/log instead of /run/log
+# Set journald storage to persistent such that logs are written to /var/log instead of /run/log
 if [[ ! -f /etc/systemd/journald.conf.d/10-use-persistent-log-storage.conf ]]; then
   mkdir -p /etc/systemd/journald.conf.d
   cat <<EOF > /etc/systemd/journald.conf.d/10-use-persistent-log-storage.conf
@@ -159,7 +158,14 @@ if [[ ! -f /etc/systemd/journald.conf.d/10-use-persistent-log-storage.conf ]]; t
 Storage=persistent
 EOF
   systemctl restart systemd-journald
-fi`
+fi
+
+`
+
+	for _, unit := range osc.Spec.Units {
+		script += fmt.Sprintf(`systemctl enable '%s' && systemctl restart --no-block '%s'
+`, unit.Name, unit.Name)
+	}
 
 	if osc.Spec.Type == memoryone.OSTypeMemoryOneCHost {
 		return wrapIntoMemoryOneHeaderAndFooter(osc, script)
