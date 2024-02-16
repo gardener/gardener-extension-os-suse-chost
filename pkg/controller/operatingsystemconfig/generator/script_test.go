@@ -22,7 +22,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/apis/memoryonechost"
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/controller/operatingsystemconfig/generator"
@@ -47,8 +47,8 @@ var _ = Describe("Script Generator Test", func() {
 							Type: memoryone.OSTypeMemoryOneCHost,
 							ProviderConfig: &runtime.RawExtension{
 								Raw: encode(&memoryonechost.OperatingSystemConfiguration{
-									MemoryTopology: pointer.String("3"),
-									SystemMemory:   pointer.String("7x"),
+									MemoryTopology: ptr.To("3"),
+									SystemMemory:   ptr.To("7x"),
 								}),
 							},
 						},
