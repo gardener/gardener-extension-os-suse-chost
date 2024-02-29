@@ -1,5 +1,5 @@
 # [Gardener Extension for SUSE CHost](https://gardener.cloud)
-
+[![REUSE status](https://api.reuse.software/badge/github.com/gardener/gardener-extension-os-suse-chost)](https://api.reuse.software/info/github.com/gardener/gardener-extension-os-suse-chost)
 [![CI Build status](https://concourse.ci.gardener.cloud/api/v1/teams/gardener/pipelines/gardener-extension-os-suse-chost-master/jobs/master-head-update-job/badge)](https://concourse.ci.gardener.cloud/teams/gardener/pipelines/gardener-extension-os-suse-chost-master/jobs/master-head-update-job)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gardener/gardener-extension-os-suse-chost)](https://goreportcard.com/report/github.com/gardener/gardener-extension-os-suse-chost)
 
