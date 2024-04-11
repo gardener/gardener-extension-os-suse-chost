@@ -38,6 +38,7 @@ var _ = Describe("Actuator", func() {
 	BeforeEach(func() {
 		fakeClient = fakeclient.NewClientBuilder().Build()
 		mgr = test.FakeManager{Client: fakeClient}
+		actuator = NewActuator(mgr)
 
 		osc = &extensionsv1alpha1.OperatingSystemConfig{
 			Spec: extensionsv1alpha1.OperatingSystemConfigSpec{
@@ -51,33 +52,8 @@ var _ = Describe("Actuator", func() {
 		}
 	})
 
-	When("UseGardenerNodeAgent is false", func() {
-		BeforeEach(func() {
-			actuator = NewActuator(mgr, false)
-		})
-
-		Describe("#Reconcile", func() {
-			It("should not return an error", func() {
-				userData, command, unitNames, fileNames, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(userData).NotTo(BeEmpty()) // legacy logic is tested in ./generator/generator_test.go
-				Expect(command).To(BeNil())
-				Expect(unitNames).To(ConsistOf("some-unit"))
-				Expect(fileNames).To(ConsistOf("/some/file"))
-				Expect(extensionUnits).To(BeEmpty())
-				Expect(extensionFiles).To(BeEmpty())
-			})
-		})
-	})
-
-	When("UseGardenerNodeAgent is true", func() {
-		BeforeEach(func() {
-			actuator = NewActuator(mgr, true)
-		})
-
-		When("purpose is 'provision'", func() {
-			expectedUserData := `#!/bin/bash
+	When("purpose is 'provision'", func() {
+		expectedUserData := `#!/bin/bash
 # disable the default log rotation
 mkdir -p /etc/docker/
 cat <<EOF > /etc/docker/daemon.json
@@ -160,37 +136,34 @@ fi
 systemctl enable 'some-unit' && systemctl restart --no-block 'some-unit'
 `
 
-			When("OS type is 'suse-chost'", func() {
-				Describe("#Reconcile", func() {
-					It("should not return an error", func() {
-						userData, command, unitNames, fileNames, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
-						Expect(err).NotTo(HaveOccurred())
+		When("OS type is 'suse-chost'", func() {
+			Describe("#Reconcile", func() {
+				It("should not return an error", func() {
+					userData, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
+					Expect(err).NotTo(HaveOccurred())
 
-						Expect(string(userData)).To(Equal(expectedUserData))
-						Expect(command).To(BeNil())
-						Expect(unitNames).To(BeEmpty())
-						Expect(fileNames).To(BeEmpty())
-						Expect(extensionUnits).To(BeEmpty())
-						Expect(extensionFiles).To(BeEmpty())
-					})
+					Expect(string(userData)).To(Equal(expectedUserData))
+					Expect(extensionUnits).To(BeEmpty())
+					Expect(extensionFiles).To(BeEmpty())
 				})
 			})
+		})
 
-			When("OS type is 'memoryone-chost'", func() {
-				BeforeEach(func() {
-					osc.Spec.Type = memoryone.OSTypeMemoryOneCHost
-					osc.Spec.ProviderConfig = &runtime.RawExtension{Raw: []byte(`apiVersion: memoryone-chost.os.extensions.gardener.cloud/v1alpha1
+		When("OS type is 'memoryone-chost'", func() {
+			BeforeEach(func() {
+				osc.Spec.Type = memoryone.OSTypeMemoryOneCHost
+				osc.Spec.ProviderConfig = &runtime.RawExtension{Raw: []byte(`apiVersion: memoryone-chost.os.extensions.gardener.cloud/v1alpha1
 kind: OperatingSystemConfiguration
 memoryTopology: "4"
 systemMemory: "8x"`)}
-				})
+			})
 
-				Describe("#Reconcile", func() {
-					It("should not return an error", func() {
-						userData, command, unitNames, fileNames, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
-						Expect(err).NotTo(HaveOccurred())
+			Describe("#Reconcile", func() {
+				It("should not return an error", func() {
+					userData, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
+					Expect(err).NotTo(HaveOccurred())
 
-						Expect(string(userData)).To(Equal(`Content-Type: multipart/mixed; boundary="==BOUNDARY=="
+					Expect(string(userData)).To(Equal(`Content-Type: multipart/mixed; boundary="==BOUNDARY=="
 MIME-Version: 1.0
 --==BOUNDARY==
 Content-Type: text/x-vsmp; section=vsmp
@@ -200,20 +173,17 @@ mem_topology=4
 Content-Type: text/x-shellscript
 ` + expectedUserData + `
 --==BOUNDARY==`))
-						Expect(command).To(BeNil())
-						Expect(unitNames).To(BeEmpty())
-						Expect(fileNames).To(BeEmpty())
-						Expect(extensionUnits).To(BeEmpty())
-						Expect(extensionFiles).To(BeEmpty())
-					})
+					Expect(extensionUnits).To(BeEmpty())
+					Expect(extensionFiles).To(BeEmpty())
+				})
 
-					It("should use default values for the system_memory and mem_topology", func() {
-						osc.Spec.ProviderConfig = nil
+				It("should use default values for the system_memory and mem_topology", func() {
+					osc.Spec.ProviderConfig = nil
 
-						userData, command, unitNames, fileNames, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
-						Expect(err).NotTo(HaveOccurred())
+					userData, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
+					Expect(err).NotTo(HaveOccurred())
 
-						Expect(string(userData)).To(Equal(`Content-Type: multipart/mixed; boundary="==BOUNDARY=="
+					Expect(string(userData)).To(Equal(`Content-Type: multipart/mixed; boundary="==BOUNDARY=="
 MIME-Version: 1.0
 --==BOUNDARY==
 Content-Type: text/x-vsmp; section=vsmp
@@ -223,33 +193,26 @@ mem_topology=2
 Content-Type: text/x-shellscript
 ` + expectedUserData + `
 --==BOUNDARY==`))
-						Expect(command).To(BeNil())
-						Expect(unitNames).To(BeEmpty())
-						Expect(fileNames).To(BeEmpty())
-						Expect(extensionUnits).To(BeEmpty())
-						Expect(extensionFiles).To(BeEmpty())
-					})
-				})
-			})
-		})
-
-		When("purpose is 'reconcile'", func() {
-			BeforeEach(func() {
-				osc.Spec.Purpose = extensionsv1alpha1.OperatingSystemConfigPurposeReconcile
-			})
-
-			Describe("#Reconcile", func() {
-				It("should not return an error", func() {
-					userData, command, unitNames, fileNames, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
-					Expect(err).NotTo(HaveOccurred())
-
-					Expect(userData).NotTo(BeEmpty()) // legacy logic is tested in ./generator/generator_test.go
-					Expect(command).To(BeNil())
-					Expect(unitNames).To(ConsistOf("some-unit"))
-					Expect(fileNames).To(ConsistOf("/some/file"))
 					Expect(extensionUnits).To(BeEmpty())
 					Expect(extensionFiles).To(BeEmpty())
 				})
+			})
+		})
+	})
+
+	When("purpose is 'reconcile'", func() {
+		BeforeEach(func() {
+			osc.Spec.Purpose = extensionsv1alpha1.OperatingSystemConfigPurposeReconcile
+		})
+
+		Describe("#Reconcile", func() {
+			It("should not return an error", func() {
+				userData, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(userData).To(BeEmpty())
+				Expect(extensionUnits).To(BeEmpty())
+				Expect(extensionFiles).To(BeEmpty())
 			})
 		})
 	})
