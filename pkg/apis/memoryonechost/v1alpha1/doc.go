@@ -7,7 +7,7 @@
 // +k8s:openapi-gen=true
 // +k8s:defaulter-gen=TypeMeta
 
-//go:generate gen-crd-api-reference-docs -api-dir . -config ../../../../hack/api-reference/memoryonechost.json -template-dir ../../../../vendor/github.com/gardener/gardener/hack/api-reference/template -out-file ../../../../hack/api-reference/memoryonechost.md
+//go:generate gen-crd-api-reference-docs -api-dir . -config ../../../../hack/api-reference/memoryonechost.json -template-dir $GARDENER_HACK_DIR/api-reference/template -out-file ../../../../hack/api-reference/memoryonechost.md
 
 // Package v1alpha1 contains the v1alpha1 version of the API.
 // +groupName=memoryone-chost.os.extensions.gardener.cloud
