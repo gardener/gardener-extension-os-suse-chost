@@ -1,4 +1,16 @@
 gardener-extension-os-suse-chost:
+  templates: 
+    helmcharts:
+    - &os-suse-chost
+      name: os-suse-chost
+      dir: charts/gardener-extension-os-suse-chost
+      registry: europe-docker.pkg.dev/gardener-project/snapshots/charts/gardener/extensions
+      mappings:
+      - ref: ocm-resource:gardener-extension-os-suse-chost.repository
+        attribute: image.repository
+      - ref: ocm-resource:gardener-extension-os-suse-chost.tag
+        attribute: image.tag
+
   base_definition:
     traits:
       component_descriptor:
@@ -26,11 +38,17 @@ gardener-extension-os-suse-chost:
         draft_release: ~
         options:
           public_build_logs: true
+        publish:
+          helmcharts:
+          - *os-suse-chost
     pull-request:
       traits:
         pull-request: ~
         options:
           public_build_logs: true
+        publish:
+          helmcharts:
+          - *os-suse-chost
     release:
       traits:
         version:
@@ -52,3 +70,6 @@ gardener-extension-os-suse-chost:
             gardener-extension-os-suse-chost:
               tag_as_latest: true
               image: europe-docker.pkg.dev/gardener-project/releases/gardener/extensions/os-suse-chost
+          helmcharts:
+          - <<: *os-suse-chost
+            registry: europe-docker.pkg.dev/gardener-project/releases/charts/gardener/extensions
