@@ -97,12 +97,6 @@ EOF
 chmod 0644 /etc/systemd/system/containerd.service.d/11-exec_config.conf
 ` + writeFilesToDiskScript + `
 ` + writeUnitsToDiskScript + `
-if [[ -d /sys/class/net/eth0 ]]
-then
-  ip link set dev eth0 mtu 1460
-  grep -q '^MTU' /etc/sysconfig/network/ifcfg-eth0 && sed -i 's/^MTU.*/MTU=1460/' /etc/sysconfig/network/ifcfg-eth0 || echo 'MTU=1460' >> /etc/sysconfig/network/ifcfg-eth0
-  wicked ifreload eth0
-fi
 
 # mitigate https://github.com/systemd/systemd/issues/7082
 # ref https://github.com/coreos/bugs/issues/2193#issuecomment-337767555
