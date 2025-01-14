@@ -29,6 +29,8 @@ gardener-extension-os-suse-chost:
               value:
               - type: 'githubUser'
                 username: 'MrBatschner'
+              - type: 'githubUser'
+                username: 'Roncossek'
   jobs:
     head-update:
       traits:
