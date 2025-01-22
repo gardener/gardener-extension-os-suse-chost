@@ -201,12 +201,28 @@ Content-Type: text/x-shellscript
 
 		Describe("#Reconcile", func() {
 			It("should not return an error", func() {
-				userData, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
+				userData, extensionUnits, _, err := actuator.Reconcile(ctx, log, osc)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(userData).To(BeEmpty())
 				Expect(extensionUnits).To(BeEmpty())
-				Expect(extensionFiles).To(BeEmpty())
+			})
+
+			It("should deploy a sysctl file to configure IPv6 router advertisements", func() {
+				_, _, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
+				Expect(err).NotTo(HaveOccurred())
+
+				sysctl_content := `# enables IPv6 router advertisements on all interfaces even when ip_forward is enabled
+net.ipv6.conf.all.accept_ra = 2
+
+# specifically enable IPv6 router advertisements on the first ethernet interface (eth0 for net.ifnames=0)
+net.ipv6.conf.eth0.accept_ra = 2
+`
+
+				Expect(len(extensionFiles)).To(Equal(1))
+				Expect(extensionFiles[0].Path).To(Equal("/etc/sysctl.d/98-enable-ipv6-ra.conf"))
+				Expect(extensionFiles[0].Permissions).To(Equal(ptr.To(uint32(0644))))
+				Expect(extensionFiles[0].Content.Inline.Data).To(Equal(sysctl_content))
 			})
 		})
 	})
