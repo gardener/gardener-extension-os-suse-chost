@@ -212,7 +212,7 @@ Content-Type: text/x-shellscript
 				_, _, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
 				Expect(err).NotTo(HaveOccurred())
 
-				sysctl_content := `# enables IPv6 router advertisements on all interfaces even when ip_forward is enabled
+				sysctl_content := `# enables IPv6 router advertisements on all interfaces even when ip forwarding for IPv6 is enabled
 net.ipv6.conf.all.accept_ra = 2
 
 # specifically enable IPv6 router advertisements on the first ethernet interface (eth0 for net.ifnames=0)

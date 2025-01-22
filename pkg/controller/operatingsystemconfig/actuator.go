@@ -185,7 +185,7 @@ func (a *actuator) handleReconcileOSC(_ *extensionsv1alpha1.OperatingSystemConfi
 			Permissions: ptr.To(uint32(0644)),
 			Content: extensionsv1alpha1.FileContent{
 				Inline: &extensionsv1alpha1.FileContentInline{
-					Data: `# enables IPv6 router advertisements on all interfaces even when ip_forward is enabled
+					Data: `# enables IPv6 router advertisements on all interfaces even when ip forwarding for IPv6 is enabled
 net.ipv6.conf.all.accept_ra = 2
 
 # specifically enable IPv6 router advertisements on the first ethernet interface (eth0 for net.ifnames=0)
