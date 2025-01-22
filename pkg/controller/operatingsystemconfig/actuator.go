@@ -12,6 +12,7 @@ import (
 	"github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/go-logr/logr"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -175,6 +176,25 @@ Content-Type: text/x-shellscript
 }
 
 func (a *actuator) handleReconcileOSC(_ *extensionsv1alpha1.OperatingSystemConfig) ([]extensionsv1alpha1.Unit, []extensionsv1alpha1.File, error) {
-	// os-suse-chost does not add any additional units or additional files
-	return nil, nil, nil
+
+	// enable accepting IPv6 router advertisements so that the interface can obtain a default route
+	// when IP forwarding is enabled (which it is in K8S context)
+	files := []extensionsv1alpha1.File{
+		{
+			Path:        "/etc/sysctl.d/98-enable-ipv6-ra.conf",
+			Permissions: ptr.To(uint32(0644)),
+			Content: extensionsv1alpha1.FileContent{
+				Inline: &extensionsv1alpha1.FileContentInline{
+					Data: `# enables IPv6 router advertisements on all interfaces even when ip forwarding for IPv6 is enabled
+net.ipv6.conf.all.accept_ra = 2
+
+# specifically enable IPv6 router advertisements on the first ethernet interface (eth0 for net.ifnames=0)
+net.ipv6.conf.eth0.accept_ra = 2
+`,
+				},
+			},
+		},
+	}
+
+	return nil, files, nil
 }
