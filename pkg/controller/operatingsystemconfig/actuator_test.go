@@ -54,6 +54,12 @@ var _ = Describe("Actuator", func() {
 
 	When("purpose is 'provision'", func() {
 		expectedUserData := `#!/bin/bash
+if [ -f "/var/lib/osc/provision-osc-applied" ]; then
+  echo "Provision OSC already applied, exiting..."
+  exit 0
+fi
+
+
 # disable the default log rotation
 mkdir -p /etc/docker/
 cat <<EOF > /etc/docker/daemon.json
@@ -128,6 +134,10 @@ EOF
 fi
 
 systemctl enable 'some-unit' && systemctl restart --no-block 'some-unit'
+
+
+mkdir -p /var/lib/osc
+touch /var/lib/osc/provision-osc-applied
 `
 
 		When("OS type is 'suse-chost'", func() {
