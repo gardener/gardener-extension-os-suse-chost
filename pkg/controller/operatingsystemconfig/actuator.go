@@ -69,6 +69,7 @@ func (a *actuator) handleProvisionOSC(ctx context.Context, osc *extensionsv1alph
 	writeUnitsToDiskScript := operatingsystemconfig.UnitsToDiskScript(osc.Spec.Units)
 
 	script := `#!/bin/bash
+
 # disable the default log rotation
 mkdir -p /etc/docker/
 cat <<EOF > /etc/docker/daemon.json
@@ -139,6 +140,9 @@ fi
 		script += fmt.Sprintf(`systemctl enable '%s' && systemctl restart --no-block '%s'
 `, unit.Name, unit.Name)
 	}
+
+	// The provisioning script must run only once.
+	script = operatingsystemconfig.WrapProvisionOSCIntoOneshotScript(script)
 
 	if osc.Spec.Type == memoryone.OSTypeMemoryOneCHost {
 		return wrapIntoMemoryOneHeaderAndFooter(osc, script)
