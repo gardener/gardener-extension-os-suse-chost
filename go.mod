@@ -1,6 +1,6 @@
 module github.com/gardener/gardener-extension-os-suse-chost
 
-go 1.23.1
+go 1.24.0
 
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.0
