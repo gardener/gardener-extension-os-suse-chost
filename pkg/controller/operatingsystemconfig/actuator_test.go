@@ -143,12 +143,13 @@ touch /var/lib/osc/provision-osc-applied
 		When("OS type is 'suse-chost'", func() {
 			Describe("#Reconcile", func() {
 				It("should not return an error", func() {
-					userData, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
+					userData, extensionUnits, extensionFiles, inplaceUpdateStatus, err := actuator.Reconcile(ctx, log, osc)
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(string(userData)).To(Equal(expectedUserData))
 					Expect(extensionUnits).To(BeEmpty())
 					Expect(extensionFiles).To(BeEmpty())
+					Expect(inplaceUpdateStatus).To(BeNil())
 				})
 			})
 		})
@@ -164,7 +165,7 @@ systemMemory: "8x"`)}
 
 			Describe("#Reconcile", func() {
 				It("should not return an error", func() {
-					userData, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
+					userData, extensionUnits, extensionFiles, inplaceUpdateStatus, err := actuator.Reconcile(ctx, log, osc)
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(string(userData)).To(Equal(`Content-Type: multipart/mixed; boundary="==BOUNDARY=="
@@ -179,12 +180,13 @@ Content-Type: text/x-shellscript
 --==BOUNDARY==`))
 					Expect(extensionUnits).To(BeEmpty())
 					Expect(extensionFiles).To(BeEmpty())
+					Expect(inplaceUpdateStatus).To(BeNil())
 				})
 
 				It("should use default values for the system_memory and mem_topology", func() {
 					osc.Spec.ProviderConfig = nil
 
-					userData, extensionUnits, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
+					userData, extensionUnits, extensionFiles, inplaceUpdateStatus, err := actuator.Reconcile(ctx, log, osc)
 					Expect(err).NotTo(HaveOccurred())
 
 					Expect(string(userData)).To(Equal(`Content-Type: multipart/mixed; boundary="==BOUNDARY=="
@@ -199,6 +201,7 @@ Content-Type: text/x-shellscript
 --==BOUNDARY==`))
 					Expect(extensionUnits).To(BeEmpty())
 					Expect(extensionFiles).To(BeEmpty())
+					Expect(inplaceUpdateStatus).To(BeNil())
 				})
 			})
 		})
@@ -211,7 +214,7 @@ Content-Type: text/x-shellscript
 
 		Describe("#Reconcile", func() {
 			It("should not return an error", func() {
-				userData, extensionUnits, _, err := actuator.Reconcile(ctx, log, osc)
+				userData, extensionUnits, _, _, err := actuator.Reconcile(ctx, log, osc)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(userData).To(BeEmpty())
@@ -219,7 +222,7 @@ Content-Type: text/x-shellscript
 			})
 
 			It("should deploy a sysctl file to configure IPv6 router advertisements", func() {
-				_, _, extensionFiles, err := actuator.Reconcile(ctx, log, osc)
+				_, _, extensionFiles, _, err := actuator.Reconcile(ctx, log, osc)
 				Expect(err).NotTo(HaveOccurred())
 
 				sysctl_content := `# enables IPv6 router advertisements on all interfaces even when ip forwarding for IPv6 is enabled
