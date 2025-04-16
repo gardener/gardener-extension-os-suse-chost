@@ -50,6 +50,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        securityContext:
+          allowPrivilegeEscalation: false
 {{- if .Values.resources }}
         resources:
 {{ toYaml .Values.resources | nindent 10 }}
