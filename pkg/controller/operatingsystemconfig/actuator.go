@@ -69,25 +69,11 @@ func (a *actuator) handleProvisionOSC(ctx context.Context, osc *extensionsv1alph
 	writeUnitsToDiskScript := operatingsystemconfig.UnitsToDiskScript(osc.Spec.Units)
 
 	script := `#!/bin/bash
-
-# disable the default log rotation
-mkdir -p /etc/docker/
-cat <<EOF > /etc/docker/daemon.json
-{
-  "log-level": "warn",
-  "log-driver": "json-file"
-}
-EOF
-
 CONTAINERD_CONFIG_PATH=/etc/containerd/config.toml
 if [[ ! -s "${CONTAINERD_CONFIG_PATH}" || $(cat ${CONTAINERD_CONFIG_PATH}) == "# See containerd-config.toml(5) for documentation." ]]; then
   mkdir -p /etc/containerd
   containerd config default > "${CONTAINERD_CONFIG_PATH}"
   chmod 0644 "${CONTAINERD_CONFIG_PATH}"
-fi
-
-if systemctl show containerd -p Conflicts | grep -q docker; then
-  sed -re 's/Conflicts=(.*)(docker.service|docker)(.*)/Conflicts=\1 \3/g' -i /usr/lib/systemd/system/containerd.service
 fi
 
 mkdir -p /etc/systemd/system/containerd.service.d
@@ -115,14 +101,12 @@ EOF
   systemctl daemon-reload
 fi
 
-until zypper -q install -y docker wget socat jq nfs-client; [ $? -ne 7 ]; do sleep 1; done
-ln -s /usr/bin/docker /bin/docker
+until zypper -q install -y wget socat jq nfs-client; [ $? -ne 7 ]; do sleep 1; done
 ln -s /bin/ip /usr/bin/ip
 if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
 systemctl daemon-reload
 ln -s /usr/sbin/containerd-ctr /usr/sbin/ctr
 systemctl enable containerd && systemctl restart containerd
-systemctl enable docker && systemctl restart docker
 
 # Set journald storage to persistent such that logs are written to /var/log instead of /run/log
 if [[ ! -f /etc/systemd/journald.conf.d/10-use-persistent-log-storage.conf ]]; then
