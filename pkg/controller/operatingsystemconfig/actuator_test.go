@@ -66,6 +66,14 @@ if [[ ! -s "${CONTAINERD_CONFIG_PATH}" || $(cat ${CONTAINERD_CONFIG_PATH}) == "#
   chmod 0644 "${CONTAINERD_CONFIG_PATH}"
 fi
 
+# Some versions of SuSE CHost comes with a predefined docker unit - enabled but not started.
+# In case of reboot, the docker unit is started and prevents the containerd unit from starting.
+# Due to this reason, update the containerd unit to do not conflict with the docker unit.
+if systemctl show containerd -p Conflicts | grep -q docker; then
+  cp /usr/lib/systemd/system/containerd.service /etc/systemd/system/containerd.service
+  sed -re 's/Conflicts=(.*)(docker.service|docker)(.*)/Conflicts=\1 \3/g' -i /etc/systemd/system/containerd.service
+fi
+
 mkdir -p /etc/systemd/system/containerd.service.d
 cat <<EOF > /etc/systemd/system/containerd.service.d/11-exec_config.conf
 [Service]
@@ -106,6 +114,10 @@ if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
 systemctl daemon-reload
 ln -s /usr/sbin/containerd-ctr /usr/sbin/ctr
 systemctl enable containerd && systemctl restart containerd
+
+# Some versions of SuSE CHost comes with a predefined docker unit - enabled but not started.
+# Disable the docker unit to prevent a reboot from starting it.
+systemctl disable docker && systemctl stop docker || echo "No docker service to disable or stop"
 
 # Set journald storage to persistent such that logs are written to /var/log instead of /run/log
 if [[ ! -f /etc/systemd/journald.conf.d/10-use-persistent-log-storage.conf ]]; then
