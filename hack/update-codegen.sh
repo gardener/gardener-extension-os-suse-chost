@@ -13,6 +13,9 @@ PROJECT_ROOT="$(dirname "$0")"/..
 # setup virtual GOPATH
 # shellcheck disable=SC1091
 source "$GARDENER_HACK_DIR"/vgopath-setup.sh
+if [ -n "${GOPATH:-}" ]; then
+  rm -f $GOPATH/bin/*-gen
+fi
 
 CODE_GEN_DIR=$(go list -m -f '{{.Dir}}' k8s.io/code-generator)
 # shellcheck disable=SC1091
