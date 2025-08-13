@@ -49,8 +49,8 @@ install:
 docker-login:
 	@gcloud auth activate-service-account --key-file .kube-secrets/gcr/gcr-readwrite.json
 
-.PHONY: docker-images
-docker-images:
+.PHONY: docker-image-extension
+docker-image-extension:
 	@docker buildx build --platform=$(PLATFORM) \
 		-t $(IMAGE_PREFIX)/$(NAME):$(VERSION) \
 		-t $(IMAGE_PREFIX)/$(NAME):latest \
@@ -58,6 +58,10 @@ docker-images:
 		-m 6g \
 		--target $(EXTENSION_PREFIX)-$(NAME) \
 		.
+
+.PHONY: docker-images
+docker-images: docker-image-extension
+
 #####################################################################
 # Rules for verification, formatting, linting, testing and cleaning #
 #####################################################################
