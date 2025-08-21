@@ -44,6 +44,34 @@ jobs:
       target: gardener-extension-os-suse-chost
       extra-tags: latest
 
+  helmcharts:
+    name: Build Helmcharts
+    needs:
+      - prepare
+      - oci-images
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: gardener/cc-utils/.github/workflows/helmchart-ocm.yaml@master
+    strategy:
+      matrix:
+        args:
+          - name: os-suse-chost
+            dir: charts/gardener-extension-os-suse-chost
+            oci-repository: charts/gardener/extensions
+            ocm-mappings:
+              - ref: ocm-resource:gardener-extension-os-suse-chost.repository
+                attribute: image.repository
+              - ref: ocm-resource:gardener-extension-os-suse-chost.tag
+                attribute: image.tag
+    with:
+      name: ${{ matrix.args.name }}
+      dir: ${{ matrix.args.dir }}
+      oci-registry: ${{ needs.prepare.outputs.oci-registry }}
+      oci-repository: ${{ matrix.args.oci-repository }}
+      ocm-mappings: ${{ toJSON(matrix.args.ocm-mappings) }}
+
   verify:
     runs-on: ubuntu-latest
     permissions:
