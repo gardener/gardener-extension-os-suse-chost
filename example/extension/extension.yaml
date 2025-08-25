@@ -1,0 +1,12 @@
+apiVersion: operator.gardener.cloud/v1alpha1
+kind: Extension
+metadata:
+  name: os-suse-chost
+  annotations:
+    security.gardener.cloud/pod-security-enforce: baseline
+spec:
+  resources:
+  - kind: OperatingSystemConfig
+    type: suse-chost
+  - kind: OperatingSystemConfig
+    type: memoryone-chost

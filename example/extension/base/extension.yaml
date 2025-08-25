@@ -1,0 +1,13 @@
+apiVersion: operator.gardener.cloud/v1alpha1
+kind: Extension
+metadata:
+  name: os-suse-chost
+spec:
+  deployment:
+    extension:
+      helm:
+        ociRepository:
+          ref: europe-docker.pkg.dev/gardener-project/public/charts/gardener/extensions/os-suse-chost:v1.31.0-dev
+  resources:
+  - kind: OperatingSystemConfig
+    type: suse-chost
