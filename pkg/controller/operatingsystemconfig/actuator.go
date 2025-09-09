@@ -76,9 +76,7 @@ if [[ ! -s "${CONTAINERD_CONFIG_PATH}" || $(cat ${CONTAINERD_CONFIG_PATH}) == "#
   chmod 0644 "${CONTAINERD_CONFIG_PATH}"
 fi
 
-# Some versions of SuSE CHost comes with a predefined docker unit - enabled but not started.
-# In case of reboot, the docker unit is started and prevents the containerd unit from starting.
-# Due to this reason, update the containerd unit to do not conflict with the docker unit.
+# refer to https://github.com/gardener/gardener-extension-os-suse-chost/tree/master/docs/systemd-units.md
 if systemctl show containerd -p Conflicts | grep -q docker; then
   cp /usr/lib/systemd/system/containerd.service /etc/systemd/system/containerd.service
   sed -re 's/Conflicts=(.*)(docker.service|docker)(.*)/Conflicts=\1 \3/g' -i /etc/systemd/system/containerd.service
@@ -94,21 +92,6 @@ chmod 0644 /etc/systemd/system/containerd.service.d/11-exec_config.conf
 ` + writeFilesToDiskScript + `
 ` + writeUnitsToDiskScript + `
 
-# mitigate https://github.com/systemd/systemd/issues/7082
-# ref https://github.com/coreos/bugs/issues/2193#issuecomment-337767555
-SYSTEMD_VERSION=$(rpm -q --qf %{VERSION} systemd | grep -Po '^[1-9]\d*')
-SUSE_VARIANT_VERSION=$(grep -oP '(?<=^VARIANT_VERSION=).+' /etc/os-release | tr -d '"')
-SUSE_SP_ID=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"' | cut -d '.' -f 2)
-
-if [[ $SYSMTED_VERSION -lt 236 && -n $SUSE_SP_ID && $SUSE_SP_ID -lt 3 && -n $SUSE_VARIANT_VERSION && $SUSE_VARIANT_VERSION -lt 20210722 ]]; then
-  mkdir -p /etc/systemd/system/systemd-hostnamed.service.d/
-  cat <<EOF > /etc/systemd/system/systemd-hostnamed.service.d/10-protect-system.conf
-[Service]
-ProtectSystem=full
-EOF
-  systemctl daemon-reload
-fi
-
 until zypper -q install -y wget socat jq nfs-client; [ $? -ne 7 ]; do sleep 1; done
 ln -s /bin/ip /usr/bin/ip
 if [ ! -s /etc/hostname ]; then hostname > /etc/hostname; fi
@@ -116,8 +99,6 @@ systemctl daemon-reload
 ln -s /usr/sbin/containerd-ctr /usr/sbin/ctr
 systemctl enable containerd && systemctl restart containerd
 
-# Some versions of SuSE CHost comes with a predefined docker unit - enabled but not started.
-# Disable the docker unit to prevent a reboot from starting it.
 systemctl disable docker && systemctl stop docker || echo "No docker service to disable or stop"
 
 # Set journald storage to persistent such that logs are written to /var/log instead of /run/log
