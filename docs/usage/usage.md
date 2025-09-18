@@ -22,20 +22,57 @@ If the second option applies to your use-case please make sure that your VPC has
 
 This extension controller is also capable of generating user-data for the [vSMP MemoryOne](https://marketplace.cloud.vmware.com/services/details/vsmp-memoryone?slug=true) operating system in conjunction with SuSE CHost.
 It reacts on the `memoryone-chost` extension type.
-Additionally, it allows certain customizations with the following configuration:
+
+### Customizing the MemoryOne hypervisor
+
+To pass configuration parameters to the MemoryOne hypervisor, this extension supports two configuration types.
+
+#### Legacy configuration **(deprecated)**
+
+It is possible to configure the parameters for `memoryTopology` and `systemMemory` through respective dedicated fields:
 
 ```yaml
 apiVersion: memoryone-chost.os.extensions.gardener.cloud/v1alpha1
 kind: OperatingSystemConfiguration
-memoryTopology: "3"
+memoryTopology: "4"
+systemMemory: "8x"
+```
+
+- The `memoryTopology` field controls the `mem_topology` setting. If it's not provided then it will default to `2`.
+- The `systemMemory` field controls the `system_memory` setting. If it's not provided then it defaults to `6x`.
+
+As these two fields are not sufficient to pass in any other of the several dozens of parameters that vSMP MemoryOne supports, it is possible to _inject_ additional key-value pairs through either `memoryTopology` or `systemMemory` by separating them by a semicolon `;`:
+
+```yaml
+apiVersion: memoryone-chost.os.extensions.gardener.cloud/v1alpha1
+kind: OperatingSystemConfiguration
+memoryTopology: "3;debug_features=&0xffffffff"
 systemMemory: "7x"
 ```
 
-* The `memoryTopology` field controls the `mem_topology` setting. If it's not provided then it will default to `2`.
-* The `systemMemory` field controls the `system_memory` setting. If it's not provided then it defaults to `6x`.
+This however is discouraged and hence, the legacy fields for `memoryTopology` or `systemMemory` are **deprecated** and will be removed in a future version.
 
-Please note that it was only e2e-tested on AWS.
-Additionally, you need a snapshot ID of a SuSE CHost/CHost volume (see below how to create it).
+#### New vSMP configuration **(recommended)**
+
+It is possible to configure any key-value pair that configures the vSMP MemoryOne hypervisor by passing them in the `vsmpConfiguration` map. Note, that the keys must be the ones that vSMP MemoryOne understands, i.e. `mem_topology` instead of `memoryTopology` and `system_memory` instead of `systemMemory`.
+
+```yaml
+apiVersion: memoryone-chost.os.extensions.gardener.cloud/v1alpha1
+kind: OperatingSystemConfiguration
+vsmpConfiguration:
+  mem_topology: "3"
+  system_memory: "7x"
+  debug_features: "&0xffffff"
+  pci_dev_filter: "\"00:0a:ce\""
+```
+
+Internally, this is a `map[string]string` hence, numbers/integers and/or booleans must be quoted. If quotes are necessary in values, they can be escaped.
+
+**Please note** that semicola `;` are not allowed inside values for `vsmpConfiguration` - if a semicolon is found in a value, it and anything that follows will get stripped before being processed any further.
+
+### Using vSMP MemoryOne with Shoots
+
+As the vSMP MemoryOne OS image you select in a Shoot manifest only contains the MemoryOne hypervisor, you will need a snapshot ID of a SuSE CHost/CHost volume (see below how to create it).
 
 An exemplary worker pool configuration inside a `Shoot` resource using for the vSMP MemoryOne operating system would look as follows:
 
@@ -60,8 +97,11 @@ spec:
         providerConfig:
           apiVersion: memoryone-chost.os.extensions.gardener.cloud/v1alpha1
           kind: OperatingSystemConfiguration
-          memoryTopology: "2"
-          systemMemory: "6x"
+          vsmpConfiguration:
+            mem_topology: "3"
+            system_memory: "7x"
+            debug_features: "&0xffffff"
+            pci_dev_filter: "\"00:0a:ce\""
       type: c5d.metal
     volume:
       size: 20Gi
@@ -80,7 +120,7 @@ spec:
     - eu-central-1b
 ```
 
-Please note that vSMP MemoryOne only works for EC2 bare-metal instance types such as `M5d`, `R5`, `C5`, `C5d`, etc. - please consult [the EC2 instance types overview page](https://aws.amazon.com/ec2/instance-types/) and the documentation of vSMP MemoryOne to find out whether the instance type in question is eligible.
+Please consult the documentation of vSMP MemoryOne to find out which instance types on the different cloud providers support running vSMP MemoryOne.
 
 ### Generating an AWS snapshot ID for the CHost/CHost operating system
 
