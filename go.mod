@@ -10,11 +10,13 @@ require (
 	github.com/onsi/ginkgo/v2 v2.27.1
 	github.com/onsi/gomega v1.38.2
 	github.com/spf13/cobra v1.10.1
+	go.uber.org/mock v0.6.0
 	golang.org/x/tools v0.38.0
 	k8s.io/api v0.33.5
 	k8s.io/apimachinery v0.33.5
 	k8s.io/code-generator v0.33.5
 	k8s.io/component-base v0.33.5
+	k8s.io/kubelet v0.33.5
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4
 	sigs.k8s.io/controller-runtime v0.21.0
 )
@@ -180,7 +182,6 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-aggregator v0.33.5 // indirect
 	k8s.io/kube-openapi v0.0.0-20250701173324-9bd5c66d9911 // indirect
-	k8s.io/kubelet v0.33.5 // indirect
 	k8s.io/metrics v0.33.5 // indirect
 	sigs.k8s.io/controller-tools v0.18.0 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect

@@ -157,9 +157,12 @@ var _ = Describe("Mutate", func() {
 			},
 
 			Entry("on cHost 15 SP4", "15.4.20240102", extensionsv1alpha1.CgroupDriverCgroupfs, kubeletCgroupDriverCgroupFs),
-			Entry("on cHost 15 SP5 before build timestamp 20240529", "15.5.20240529", extensionsv1alpha1.CgroupDriverCgroupfs, kubeletCgroupDriverCgroupFs),
-			Entry("on cHost 15 SP5 after build timestamp 20240529", "15.5.20241011", extensionsv1alpha1.CgroupDriverSystemd, kubeletCgroupDriverSystemd),
-			Entry("on cHost 15 SP6", "15.6.20240102", extensionsv1alpha1.CgroupDriverSystemd, kubeletCgroupDriverSystemd),
+			Entry("on cHost 15 SP5", "15.5.20240529", extensionsv1alpha1.CgroupDriverCgroupfs, kubeletCgroupDriverCgroupFs),
+			Entry("on cHost 15 SP6 before build timestamp 20250918", "15.6.20250819", extensionsv1alpha1.CgroupDriverCgroupfs, kubeletCgroupDriverCgroupFs),
+			Entry("on cHost 15 SP6 starting with build timestamp 20251201", "15.6.20260101", extensionsv1alpha1.CgroupDriverSystemd, kubeletCgroupDriverSystemd),
+			Entry("on cHost 15 SP7 before build timestamp 20250625", "15.7.20250625", extensionsv1alpha1.CgroupDriverCgroupfs, kubeletCgroupDriverCgroupFs),
+			Entry("on cHost 15 SP7 starting with build timestamp 20251201", "15.7.20260101", extensionsv1alpha1.CgroupDriverSystemd, kubeletCgroupDriverSystemd),
+			Entry("on cHost 15 greater than SP7", "15.8.20250102", extensionsv1alpha1.CgroupDriverSystemd, kubeletCgroupDriverSystemd),
 		)
 	})
 })

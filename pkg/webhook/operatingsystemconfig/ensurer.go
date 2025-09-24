@@ -15,13 +15,17 @@ import (
 )
 
 var (
-	cgroupv2cHost15sp5 *semver.Version
+	cgroupv2cHost15sp6, cgroupv2cHost15sp7 *semver.Version
 )
 
 func init() {
 	// cHost 15 SP5 changed to cgroup v2 with build 20241011
 	// see https://publiccloudimagechangeinfo.suse.com/amazon/suse-sles-15-sp5-chost-byos-v20241011-hvm-ssd-arm64/image_changes.html
-	cgroupv2cHost15sp5 = semver.MustParse("15.5.20241011")
+	// all SP6 and SP7 builds run with cgroup v2 but in order to not change the cgroup driver settings
+	// on already existing clusters, we introduce the systemd driver with these build numbers only
+
+	cgroupv2cHost15sp6 = semver.MustParse("15.6.20260101")
+	cgroupv2cHost15sp7 = semver.MustParse("15.7.20260101")
 }
 
 const (
@@ -54,20 +58,27 @@ func determineChostCgroupDriver(chostVersion semver.Version) string {
 	}
 
 	if chostVersion.Major() == 15 {
-
-		if chostVersion.Minor() > 5 {
+		if chostVersion.Minor() > 7 {
 			return cgroupDriverSystemd
 		}
 
-		if chostVersion.Minor() == 5 {
-			if chostVersion.GreaterThanEqual(cgroupv2cHost15sp5) {
+		if chostVersion.Minor() == 7 {
+			if chostVersion.GreaterThanEqual(cgroupv2cHost15sp7) {
 				return cgroupDriverSystemd
 			} else {
 				return cgroupDriverCgroupfs
 			}
 		}
 
-		if chostVersion.Minor() < 5 {
+		if chostVersion.Minor() == 6 {
+			if chostVersion.GreaterThanEqual(cgroupv2cHost15sp6) {
+				return cgroupDriverSystemd
+			} else {
+				return cgroupDriverCgroupfs
+			}
+		}
+
+		if chostVersion.Minor() < 6 {
 			return cgroupDriverCgroupfs
 		}
 	}
