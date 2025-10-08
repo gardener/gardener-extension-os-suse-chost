@@ -1,0 +1,11 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+aliases:
+  gardener-extension-os-suse-chost-reviewers:
+  - MrBatschner
+  - Roncossek
+  - Vincinator
+  gardener-extension-os-suse-chost-approvers:
+  - MrBatschner
+  - Roncossek
+  - Vincinator
