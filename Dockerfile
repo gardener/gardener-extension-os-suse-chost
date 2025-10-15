@@ -10,7 +10,7 @@ COPY . .
 RUN make install
 
 ############# gardener-extension-os-suse-chost
-FROM gcr.io/distroless/static-debian11:nonroot AS gardener-extension-os-suse-chost
+FROM gcr.io/distroless/static-debian12:nonroot AS gardener-extension-os-suse-chost
 WORKDIR /
 
 COPY --from=builder /go/bin/gardener-extension-os-suse-chost /gardener-extension-os-suse-chost

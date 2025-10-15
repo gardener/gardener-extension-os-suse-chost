@@ -128,34 +128,6 @@ fi
 	return script, nil
 }
 
-func wrapIntoMemoryOneHeaderAndFooter(osc *extensionsv1alpha1.OperatingSystemConfig, in string) (string, error) {
-	config, err := memoryone.Configuration(osc)
-	if err != nil {
-		return "", err
-	}
-
-	memoryTopology, systemMemory := "2", "6x"
-	if config != nil && config.MemoryTopology != nil {
-		memoryTopology = *config.MemoryTopology
-	}
-	if config != nil && config.SystemMemory != nil {
-		systemMemory = *config.SystemMemory
-	}
-
-	out := `Content-Type: multipart/mixed; boundary="==BOUNDARY=="
-MIME-Version: 1.0
---==BOUNDARY==
-Content-Type: text/x-vsmp; section=vsmp
-system_memory=` + systemMemory + `
-mem_topology=` + memoryTopology + `
---==BOUNDARY==
-Content-Type: text/x-shellscript
-` + in + `
---==BOUNDARY==`
-
-	return out, nil
-}
-
 func (a *actuator) handleReconcileOSC(_ *extensionsv1alpha1.OperatingSystemConfig) ([]extensionsv1alpha1.Unit, []extensionsv1alpha1.File, error) {
 
 	// enable accepting IPv6 router advertisements so that the interface can obtain a default route

@@ -66,6 +66,18 @@ string
 <p>SystemMemory allows to configure the <code>system_memory</code> parameter. If not present, it will default to <code>6x</code>.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>vsmpConfiguration</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>VsmpConfiguration allows to configure any setting of vSMP</p>
+</td>
+</tr>
 </tbody>
 </table>
 <hr/>
