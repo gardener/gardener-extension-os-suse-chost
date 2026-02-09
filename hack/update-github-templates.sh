@@ -17,6 +17,7 @@ for file in `find "${GARDENER_HACK_DIR}"/../.github -name '*.md'`; do
     sed 's/to Gardener/to this extension/g' |\
     sed 's/- Gardener version:/- Gardener version (if relevant):\n- Extension version:/g' |\
     sed 's/\/kind [a-zA-Z]*/&\n\/os suse-chost/g' |\
-    sed 's/\/area TODO/\/area os/g' \
+    sed 's/\/area TODO/\/area os/g' |\
+    sed '/\"\/kind\" identifiers:/ s/$/|dependency-update/' \
   > "$(dirname $0)/../.github/${file#*.github/}"
 done
