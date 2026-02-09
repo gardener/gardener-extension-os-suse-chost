@@ -30,15 +30,15 @@ func NewActuator(mgr manager.Manager) operatingsystemconfig.Actuator {
 	}
 }
 
-func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, osc *extensionsv1alpha1.OperatingSystemConfig) ([]byte, []extensionsv1alpha1.Unit, []extensionsv1alpha1.File, *extensionsv1alpha1.InPlaceUpdatesStatus, error) {
+func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, osc *extensionsv1alpha1.OperatingSystemConfig) ([]byte, []extensionsv1alpha1.Unit, []extensionsv1alpha1.File, *extensionsv1alpha1.InPlaceUpdatesStatus, error) {
 	switch purpose := osc.Spec.Purpose; purpose {
 	case extensionsv1alpha1.OperatingSystemConfigPurposeProvision:
 		userData, err := a.handleProvisionOSC(ctx, osc)
 		return []byte(userData), nil, nil, nil, err
 
 	case extensionsv1alpha1.OperatingSystemConfigPurposeReconcile:
-		extensionUnits, extensionFiles, err := a.handleReconcileOSC(osc)
-		return nil, extensionUnits, extensionFiles, nil, err
+		extensionFiles := a.handleReconcileOSC(osc)
+		return nil, nil, extensionFiles, nil, nil
 
 	default:
 		return nil, nil, nil, nil, fmt.Errorf("unknown purpose: %s", purpose)
@@ -128,8 +128,7 @@ fi
 	return script, nil
 }
 
-func (a *actuator) handleReconcileOSC(_ *extensionsv1alpha1.OperatingSystemConfig) ([]extensionsv1alpha1.Unit, []extensionsv1alpha1.File, error) {
-
+func (a *actuator) handleReconcileOSC(_ *extensionsv1alpha1.OperatingSystemConfig) []extensionsv1alpha1.File {
 	// enable accepting IPv6 router advertisements so that the interface can obtain a default route
 	// when IP forwarding is enabled (which it is in K8S context)
 	files := []extensionsv1alpha1.File{
@@ -149,5 +148,5 @@ net.ipv6.conf.eth0.accept_ra = 2
 		},
 	}
 
-	return nil, files, nil
+	return files
 }
