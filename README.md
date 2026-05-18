@@ -1,4 +1,4 @@
-# [Gardener Extension for SUSE CHost](https://gardener.cloud)
+# Gardener Extension for SUSE CHost
 
 [![REUSE status](https://api.reuse.software/badge/github.com/gardener/gardener-extension-os-suse-chost)](https://api.reuse.software/info/github.com/gardener/gardener-extension-os-suse-chost)
 [![Build status](https://github.com/gardener/gardener-extension-os-suse-chost/actions/workflows/dev_build.yaml/badge.svg?branch=master)](https://github.com/gardener/gardener-extension-os-suse-chost/actions/workflows/dev_build.yaml)
