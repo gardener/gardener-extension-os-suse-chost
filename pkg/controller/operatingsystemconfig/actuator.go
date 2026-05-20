@@ -26,6 +26,15 @@ import (
 // we explicitly set the flag to false from this version onwards so kubelet starts.
 var kubeletFailCgroupV1MinVersion = semver.MustParse("1.35.0")
 
+// kubeletFailCgroupV1RemovedVersion is the earliest Kubernetes version in which
+// cgroup v1 support (and therefore the --fail-cgroupv1 flag) may be removed from
+// kubelet. KEP-5573 states: "The removal will be done no earlier than 1.38 to
+// maintain the k8s deprecation policy."
+// See https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/5573-remove-cgroup-v1
+// From this version on, passing the flag may cause kubelet to fail to start with
+// an unknown-flag error, so we must not emit it.
+var kubeletFailCgroupV1RemovedVersion = semver.MustParse("1.38.0")
+
 type actuator struct {
 	client client.Client
 }
@@ -167,9 +176,10 @@ net.ipv6.conf.eth0.accept_ra = 2
 }
 
 // kubeletFailCgroupV1File returns a file that sets KUBELET_EXTRA_ARGS=--fail-cgroupv1=false
-// when the shoot's Kubernetes version is >= 1.35. Starting with K8s 1.35, kubelet defaults
-// --fail-cgroupv1 to true and refuses to start on cgroup v1 hosts (KEP-5573). SUSE-CHost still
-// runs cgroup v1, so the kubelet would otherwise fail to start.
+// when the shoot's Kubernetes version is in [1.35, 1.38). Starting with K8s 1.35, kubelet
+// defaults --fail-cgroupv1 to true and refuses to start on cgroup v1 hosts (KEP-5573).
+// SUSE-CHost still runs cgroup v1, so the kubelet would otherwise fail to start.
+// The flag (and cgroup v1 support) are removed in K8s 1.38, so we must not pass it from then on.
 // The file is consumed by kubelet.service via `EnvironmentFile=-/var/lib/kubelet/extra_args`,
 // see github.com/gardener/gardener/pkg/component/extensions/operatingsystemconfig/original/components/kubelet/component.go.
 func (a *actuator) kubeletFailCgroupV1File(ctx context.Context, osc *extensionsv1alpha1.OperatingSystemConfig) (*extensionsv1alpha1.File, error) {
@@ -185,7 +195,7 @@ func (a *actuator) kubeletFailCgroupV1File(ctx context.Context, osc *extensionsv
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse kubernetes version %q: %w", cluster.Shoot.Spec.Kubernetes.Version, err)
 	}
-	if version.LessThan(kubeletFailCgroupV1MinVersion) {
+	if version.LessThan(kubeletFailCgroupV1MinVersion) || !version.LessThan(kubeletFailCgroupV1RemovedVersion) {
 		return nil, nil
 	}
 

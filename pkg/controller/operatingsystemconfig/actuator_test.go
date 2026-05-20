@@ -411,6 +411,21 @@ net.ipv6.conf.eth0.accept_ra = 2
 				})
 			})
 
+			Context("when the shoot's Kubernetes version is >= 1.38", func() {
+				BeforeEach(func() {
+					Expect(createCluster(ctx, fakeClient, osc.Namespace, "1.38.0")).To(Succeed())
+				})
+
+				It("should not deploy the kubelet --fail-cgroupv1 extra_args file", func() {
+					_, _, extensionFiles, _, err := actuator.Reconcile(ctx, log, osc)
+					Expect(err).NotTo(HaveOccurred())
+
+					for _, f := range extensionFiles {
+						Expect(f.Path).NotTo(Equal("/var/lib/kubelet/extra_args"))
+					}
+				})
+			})
+
 			Context("when the cluster resource cannot be found", func() {
 				It("should return an error", func() {
 					_, _, _, _, err := actuator.Reconcile(ctx, log, osc)
