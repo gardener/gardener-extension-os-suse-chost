@@ -9,8 +9,10 @@ import (
 	_ "embed"
 	"fmt"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	"github.com/gardener/gardener/pkg/extensions"
 	"github.com/go-logr/logr"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -18,6 +20,11 @@ import (
 
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/memoryone"
 )
+
+// kubeletFailCgroupV1MinVersion is the first Kubernetes version that defaults
+// kubelet's --fail-cgroupv1 flag to true. Since SUSE-CHost still runs cgroup v1,
+// we explicitly set the flag to false from this version onwards so kubelet starts.
+var kubeletFailCgroupV1MinVersion = semver.MustParse("1.35.0")
 
 type actuator struct {
 	client client.Client
@@ -37,8 +44,8 @@ func (a *actuator) Reconcile(ctx context.Context, _ logr.Logger, osc *extensions
 		return []byte(userData), nil, nil, nil, err
 
 	case extensionsv1alpha1.OperatingSystemConfigPurposeReconcile:
-		extensionFiles := a.handleReconcileOSC(osc)
-		return nil, nil, extensionFiles, nil, nil
+		extensionFiles, err := a.handleReconcileOSC(ctx, osc)
+		return nil, nil, extensionFiles, nil, err
 
 	default:
 		return nil, nil, nil, nil, fmt.Errorf("unknown purpose: %s", purpose)
@@ -128,7 +135,7 @@ fi
 	return script, nil
 }
 
-func (a *actuator) handleReconcileOSC(_ *extensionsv1alpha1.OperatingSystemConfig) []extensionsv1alpha1.File {
+func (a *actuator) handleReconcileOSC(ctx context.Context, osc *extensionsv1alpha1.OperatingSystemConfig) ([]extensionsv1alpha1.File, error) {
 	// enable accepting IPv6 router advertisements so that the interface can obtain a default route
 	// when IP forwarding is enabled (which it is in K8S context)
 	files := []extensionsv1alpha1.File{
@@ -148,5 +155,47 @@ net.ipv6.conf.eth0.accept_ra = 2
 		},
 	}
 
-	return files
+	failCgroupV1File, err := a.kubeletFailCgroupV1File(ctx, osc)
+	if err != nil {
+		return nil, err
+	}
+	if failCgroupV1File != nil {
+		files = append(files, *failCgroupV1File)
+	}
+
+	return files, nil
+}
+
+// kubeletFailCgroupV1File returns a file that sets KUBELET_EXTRA_ARGS=--fail-cgroupv1=false
+// when the shoot's Kubernetes version is >= 1.35. Starting with K8s 1.35, kubelet defaults
+// --fail-cgroupv1 to true and refuses to start on cgroup v1 hosts (KEP-5573). SUSE-CHost still
+// runs cgroup v1, so the kubelet would otherwise fail to start.
+// The file is consumed by kubelet.service via `EnvironmentFile=-/var/lib/kubelet/extra_args`,
+// see github.com/gardener/gardener/pkg/component/extensions/operatingsystemconfig/original/components/kubelet/component.go.
+func (a *actuator) kubeletFailCgroupV1File(ctx context.Context, osc *extensionsv1alpha1.OperatingSystemConfig) (*extensionsv1alpha1.File, error) {
+	cluster, err := extensions.GetCluster(ctx, a.client, osc.Namespace)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster: %w", err)
+	}
+	if cluster == nil || cluster.Shoot == nil {
+		return nil, nil
+	}
+
+	version, err := semver.NewVersion(cluster.Shoot.Spec.Kubernetes.Version)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse kubernetes version %q: %w", cluster.Shoot.Spec.Kubernetes.Version, err)
+	}
+	if version.LessThan(kubeletFailCgroupV1MinVersion) {
+		return nil, nil
+	}
+
+	return &extensionsv1alpha1.File{
+		Path:        "/var/lib/kubelet/extra_args",
+		Permissions: ptr.To(uint32(0644)),
+		Content: extensionsv1alpha1.FileContent{
+			Inline: &extensionsv1alpha1.FileContentInline{
+				Data: "KUBELET_EXTRA_ARGS=--fail-cgroupv1=false\n",
+			},
+		},
+	}, nil
 }

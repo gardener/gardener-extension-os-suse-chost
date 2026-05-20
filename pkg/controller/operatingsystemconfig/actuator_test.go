@@ -6,12 +6,14 @@ package operatingsystemconfig_test
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"mime"
 	"mime/multipart"
 	"strings"
 
 	"github.com/gardener/gardener/extensions/pkg/controller/operatingsystemconfig"
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/utils/test"
 	"github.com/go-logr/logr"
@@ -32,12 +34,19 @@ import (
 	"github.com/gardener/gardener-extension-os-suse-chost/pkg/susechost"
 )
 
-var codec runtime.Codec
+var (
+	codec      runtime.Codec
+	testScheme *runtime.Scheme
+)
 
 func init() {
 	scheme := runtime.NewScheme()
 	runtimeutils.Must(memoryonev1alpha1.AddToScheme(scheme))
 	codec = serializer.NewCodecFactory(scheme, serializer.EnableStrict).LegacyCodec(memoryonev1alpha1.SchemeGroupVersion)
+
+	testScheme = runtime.NewScheme()
+	runtimeutils.Must(extensionsv1alpha1.AddToScheme(testScheme))
+	runtimeutils.Must(gardencorev1beta1.AddToScheme(testScheme))
 }
 
 var _ = Describe("Actuator", func() {
@@ -52,11 +61,14 @@ var _ = Describe("Actuator", func() {
 	)
 
 	BeforeEach(func() {
-		fakeClient = fakeclient.NewClientBuilder().Build()
+		fakeClient = fakeclient.NewClientBuilder().WithScheme(testScheme).Build()
 		mgr = test.FakeManager{Client: fakeClient}
 		actuator = NewActuator(mgr)
 
 		osc = &extensionsv1alpha1.OperatingSystemConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "shoot--foo--bar",
+			},
 			Spec: extensionsv1alpha1.OperatingSystemConfigSpec{
 				DefaultSpec: extensionsv1alpha1.DefaultSpec{
 					Type: susechost.OSTypeSuSECHost,
@@ -337,29 +349,73 @@ touch /var/lib/osc/provision-osc-applied
 		})
 
 		Describe("#Reconcile", func() {
-			It("should not return an error", func() {
-				userData, extensionUnits, _, _, err := actuator.Reconcile(ctx, log, osc)
-				Expect(err).NotTo(HaveOccurred())
+			Context("when the shoot's Kubernetes version is < 1.35", func() {
+				BeforeEach(func() {
+					Expect(createCluster(ctx, fakeClient, osc.Namespace, "1.34.0")).To(Succeed())
+				})
 
-				Expect(userData).To(BeEmpty())
-				Expect(extensionUnits).To(BeEmpty())
-			})
+				It("should not return an error", func() {
+					userData, extensionUnits, _, _, err := actuator.Reconcile(ctx, log, osc)
+					Expect(err).NotTo(HaveOccurred())
 
-			It("should deploy a sysctl file to configure IPv6 router advertisements", func() {
-				_, _, extensionFiles, _, err := actuator.Reconcile(ctx, log, osc)
-				Expect(err).NotTo(HaveOccurred())
+					Expect(userData).To(BeEmpty())
+					Expect(extensionUnits).To(BeEmpty())
+				})
 
-				sysctl_content := `# enables IPv6 router advertisements on all interfaces even when ip forwarding for IPv6 is enabled
+				It("should deploy a sysctl file to configure IPv6 router advertisements", func() {
+					_, _, extensionFiles, _, err := actuator.Reconcile(ctx, log, osc)
+					Expect(err).NotTo(HaveOccurred())
+
+					sysctl_content := `# enables IPv6 router advertisements on all interfaces even when ip forwarding for IPv6 is enabled
 net.ipv6.conf.all.accept_ra = 2
 
 # specifically enable IPv6 router advertisements on the first ethernet interface (eth0 for net.ifnames=0)
 net.ipv6.conf.eth0.accept_ra = 2
 `
 
-				Expect(extensionFiles).To(HaveLen(1))
-				Expect(extensionFiles[0].Path).To(Equal("/etc/sysctl.d/98-enable-ipv6-ra.conf"))
-				Expect(extensionFiles[0].Permissions).To(Equal(ptr.To(uint32(0644))))
-				Expect(extensionFiles[0].Content.Inline.Data).To(Equal(sysctl_content))
+					Expect(extensionFiles).To(HaveLen(1))
+					Expect(extensionFiles[0].Path).To(Equal("/etc/sysctl.d/98-enable-ipv6-ra.conf"))
+					Expect(extensionFiles[0].Permissions).To(Equal(ptr.To(uint32(0644))))
+					Expect(extensionFiles[0].Content.Inline.Data).To(Equal(sysctl_content))
+				})
+
+				It("should not deploy the kubelet --fail-cgroupv1 extra_args file", func() {
+					_, _, extensionFiles, _, err := actuator.Reconcile(ctx, log, osc)
+					Expect(err).NotTo(HaveOccurred())
+
+					for _, f := range extensionFiles {
+						Expect(f.Path).NotTo(Equal("/var/lib/kubelet/extra_args"))
+					}
+				})
+			})
+
+			Context("when the shoot's Kubernetes version is >= 1.35", func() {
+				BeforeEach(func() {
+					Expect(createCluster(ctx, fakeClient, osc.Namespace, "1.35.0")).To(Succeed())
+				})
+
+				It("should deploy the kubelet --fail-cgroupv1 extra_args file", func() {
+					_, _, extensionFiles, _, err := actuator.Reconcile(ctx, log, osc)
+					Expect(err).NotTo(HaveOccurred())
+
+					var extraArgs *extensionsv1alpha1.File
+					for i, f := range extensionFiles {
+						if f.Path == "/var/lib/kubelet/extra_args" {
+							extraArgs = &extensionFiles[i]
+							break
+						}
+					}
+					Expect(extraArgs).NotTo(BeNil())
+					Expect(extraArgs.Permissions).To(Equal(ptr.To(uint32(0644))))
+					Expect(extraArgs.Content.Inline.Data).To(Equal("KUBELET_EXTRA_ARGS=--fail-cgroupv1=false\n"))
+				})
+			})
+
+			Context("when the cluster resource cannot be found", func() {
+				It("should return an error", func() {
+					_, _, _, _, err := actuator.Reconcile(ctx, log, osc)
+					Expect(err).To(HaveOccurred())
+				})
 			})
 		})
 	})
@@ -454,4 +510,31 @@ func encodeMemoryOneConfigurationIntoOsc(codec runtime.Codec, osc *extensionsv1a
 		Raw: encoded,
 	}
 	return nil
+}
+
+func createCluster(ctx context.Context, c client.Client, name, kubernetesVersion string) error {
+	shoot := &gardencorev1beta1.Shoot{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: gardencorev1beta1.SchemeGroupVersion.String(),
+			Kind:       "Shoot",
+		},
+		Spec: gardencorev1beta1.ShootSpec{
+			Kubernetes: gardencorev1beta1.Kubernetes{
+				Version: kubernetesVersion,
+			},
+		},
+	}
+	shootRaw, err := json.Marshal(shoot)
+	if err != nil {
+		return err
+	}
+	cluster := &extensionsv1alpha1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{Name: name},
+		Spec: extensionsv1alpha1.ClusterSpec{
+			CloudProfile: runtime.RawExtension{Raw: []byte("{}")},
+			Seed:         runtime.RawExtension{Raw: []byte("{}")},
+			Shoot:        runtime.RawExtension{Raw: shootRaw},
+		},
+	}
+	return c.Create(ctx, cluster)
 }
