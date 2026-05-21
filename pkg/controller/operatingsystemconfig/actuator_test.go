@@ -389,7 +389,7 @@ net.ipv6.conf.eth0.accept_ra = 2
 				})
 			})
 
-			Context("when the shoot's Kubernetes version is >= 1.35", func() {
+			Context("when the shoot's Kubernetes version is >= 1.35 and < 1.38", func() {
 				BeforeEach(func() {
 					Expect(createCluster(ctx, fakeClient, osc.Namespace, "1.35.0")).To(Succeed())
 				})
