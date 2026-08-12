@@ -68,7 +68,7 @@ docker-images: docker-image-extension
 
 .PHONY: tidy
 tidy:
-	@GO111MODULE=on go mod tidy
+	@go mod tidy
 	@GARDENER_HACK_DIR=$(GARDENER_HACK_DIR) $(REPO_ROOT)/hack/update-github-templates.sh
 	@cp $(GARDENER_HACK_DIR)/cherry-pick-pull.sh $(HACK_DIR)/cherry-pick-pull.sh && chmod +xw $(HACK_DIR)/cherry-pick-pull.sh
 
@@ -89,6 +89,7 @@ check: $(GOIMPORTS) $(GOLANGCI_LINT)
 .PHONY: generate
 generate: $(CONTROLLER_GEN) $(EXTENSION_GEN) $(CRD_REF_DOCS) $(HELM) $(KUSTOMIZE) $(MOCKGEN) $(YQ)
 	@REPO_ROOT=$(REPO_ROOT) GARDENER_HACK_DIR=$(GARDENER_HACK_DIR) bash $(GARDENER_HACK_DIR)/generate-sequential.sh ./charts/... ./cmd/... ./example/... ./pkg/...
+	@GARDENER_HACK_DIR=$(GARDENER_HACK_DIR) bash $(GARDENER_HACK_DIR)/generate-renovate-ignore-deps.sh
 	$(MAKE) format
 
 .PHONY: add-license-headers
