@@ -375,7 +375,7 @@ net.ipv6.conf.eth0.accept_ra = 2
 
 					Expect(extensionFiles).To(HaveLen(1))
 					Expect(extensionFiles[0].Path).To(Equal("/etc/sysctl.d/98-enable-ipv6-ra.conf"))
-					Expect(extensionFiles[0].Permissions).To(Equal(ptr.To(uint32(0644))))
+					Expect(extensionFiles[0].Permissions).To(Equal(ptr.To(int32(0644))))
 					Expect(extensionFiles[0].Content.Inline.Data).To(Equal(sysctl_content))
 				})
 
@@ -406,7 +406,7 @@ net.ipv6.conf.eth0.accept_ra = 2
 						}
 					}
 					Expect(extraArgs).NotTo(BeNil())
-					Expect(extraArgs.Permissions).To(Equal(ptr.To(uint32(0644))))
+					Expect(extraArgs.Permissions).To(Equal(ptr.To(int32(0644))))
 					Expect(extraArgs.Content.Inline.Data).To(Equal("KUBELET_EXTRA_ARGS=--fail-cgroupv1=false\n"))
 				})
 			})
