@@ -150,7 +150,7 @@ func (a *actuator) handleReconcileOSC(ctx context.Context, osc *extensionsv1alph
 	files := []extensionsv1alpha1.File{
 		{
 			Path:        "/etc/sysctl.d/98-enable-ipv6-ra.conf",
-			Permissions: ptr.To(uint32(0644)),
+			Permissions: ptr.To(int32(0644)),
 			Content: extensionsv1alpha1.FileContent{
 				Inline: &extensionsv1alpha1.FileContentInline{
 					Data: `# enables IPv6 router advertisements on all interfaces even when ip forwarding for IPv6 is enabled
@@ -201,7 +201,7 @@ func (a *actuator) kubeletFailCgroupV1File(ctx context.Context, osc *extensionsv
 
 	return &extensionsv1alpha1.File{
 		Path:        "/var/lib/kubelet/extra_args",
-		Permissions: ptr.To(uint32(0644)),
+		Permissions: ptr.To(int32(0644)),
 		Content: extensionsv1alpha1.FileContent{
 			Inline: &extensionsv1alpha1.FileContentInline{
 				Data: "KUBELET_EXTRA_ARGS=--fail-cgroupv1=false\n",
