@@ -32,11 +32,8 @@ rules:
   - ""
   resources:
   - secrets
-  - secrets/finalizers
   verbs:
   - get
-  - list
-  - watch
   - create
   - update
   - patch
