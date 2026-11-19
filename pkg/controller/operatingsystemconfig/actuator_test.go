@@ -266,8 +266,9 @@ touch /var/lib/osc/provision-osc-applied
 
 				It("Should not allow injecting additional key-value pairs by semicola", func() {
 					memoryOneConfiguration.VsmpConfiguration = map[string]string{
-						"foo": "bar; foobar: barfoo",
-						"abc": "xyz",
+						"foo":        "bar; foobar: barfoo",
+						"newlinefoo": "bar\nwith\nnew\nline",
+						"abc":        "xyz",
 					}
 
 					Expect(encodeMemoryOneConfigurationIntoOsc(codec, osc, &memoryOneConfiguration)).To(Succeed())
@@ -281,6 +282,7 @@ touch /var/lib/osc/provision-osc-applied
 						"mem_topology":  "2",
 						"system_memory": "6x",
 						"foo":           "bar",
+						"newlinefoo":    "bar",
 						"abc":           "xyz",
 					}))
 					Expect(decodedUserData).To(Equal(expectedUserData))
