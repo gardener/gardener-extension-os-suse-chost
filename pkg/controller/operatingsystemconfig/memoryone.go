@@ -53,7 +53,7 @@ func vsmpConfigString(config *memoryonechost.OperatingSystemConfiguration) strin
 		// this is required as we do not want to allow injecting key-value pairs with semicola in the new parameter map
 		// but need to retain the previous behaviour for the legacy configuration style
 		for k, v := range vsmpConfiguration {
-			vsmpConfiguration[k] = stripSemicola(v)
+			vsmpConfiguration[k] = stripSemicolaAndNewlines(v)
 		}
 	} else {
 		vsmpConfiguration = make(map[string]string, 2)
@@ -80,10 +80,20 @@ func vsmpConfigString(config *memoryonechost.OperatingSystemConfiguration) strin
 	// end TODO
 
 	for k, v := range vsmpConfiguration {
-		fmt.Fprintf(&configStringBuilder, "%s=%s\n", stripSemicola(k), v)
+		// values can be arbitrary strings and must not be sanitized
+		fmt.Fprintf(&configStringBuilder, "%s=%s\n", stripSemicolaAndNewlines(k), v)
 	}
 
 	return configStringBuilder.String()
+}
+
+func stripNewLines(s string) string {
+	before, _, found := strings.Cut(s, "\n")
+	if found {
+		return before
+	}
+
+	return s
 }
 
 func stripSemicola(s string) string {
@@ -92,4 +102,8 @@ func stripSemicola(s string) string {
 		return before
 	}
 	return s
+}
+
+func stripSemicolaAndNewlines(s string) string {
+	return stripSemicola(stripNewLines(s))
 }
